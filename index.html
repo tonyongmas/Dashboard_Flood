@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบเทศบาลตำบลตันหยงมัส</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; }
+        .active-menu { background-color: #ebf8ff; border-left: 4px solid #2563eb; color: #1e40af; }
+        @media print { .no-print { display: none; } .print-only { display: block; } }
+    </style>
+</head>
+<body class="bg-blue-50">
+
+    <div id="loginPage" class="fixed inset-0 bg-blue-700 flex items-center justify-center z-50 p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm text-center">
+            <img src="https://img2.pic.in.th/pic/71f81565dc59a7f9545542493a5514ab.png" class="w-24 mx-auto mb-4">
+            <h1 class="text-xl font-bold text-blue-900 mb-6">เข้าสู่ระบบเจ้าหน้าที่</h1>
+            <input type="text" id="username" placeholder="ชื่อผู้ใช้งาน" class="w-full p-3 border rounded-lg mb-4 outline-none focus:ring-2 focus:ring-blue-500">
+            <button onclick="doLogin()" id="loginBtn" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition">เข้าใช้งาน</button>
+        </div>
+    </div>
+
+    <div id="mainApp" class="hidden flex min-h-screen">
+        <aside class="w-64 bg-white shadow-xl flex-shrink-0 hidden md:block no-print">
+            <div class="p-6 text-center border-b">
+                <img src="https://img2.pic.in.th/pic/71f81565dc59a7f9545542493a5514ab.png" class="w-16 mx-auto mb-2">
+                <p class="font-bold text-blue-900 text-xs">เทศบาลตำบลตันหยงมัส</p>
+            </div>
+            <nav class="p-4 space-y-1">
+                <button onclick="showPage('water')" class="nav-btn w-full text-left p-3 rounded-lg flex items-center text-gray-600 active-menu"><i class="fas fa-water mr-3"></i> สถานการณ์น้ำ</button>
+                <button onclick="showPage('addWater')" class="nav-btn w-full text-left p-3 rounded-lg flex items-center text-gray-600"><i class="fas fa-plus-circle mr-3"></i> เพิ่มรายงานน้ำ</button>
+                <button onclick="showPage('shelter')" class="nav-btn w-full text-left p-3 rounded-lg flex items-center text-gray-600"><i class="fas fa-house-user mr-3"></i> Dashboard ศูนย์พักพิง</button>
+                <button onclick="showPage('regis')" class="nav-btn w-full text-left p-3 rounded-lg flex items-center text-gray-600"><i class="fas fa-user-plus mr-3"></i> ลงทะเบียนเข้าศูนย์</button>
+                <button onclick="showPage('looker')" class="nav-btn w-full text-left p-3 rounded-lg flex items-center text-gray-600"><i class="fas fa-chart-line mr-3"></i> รายงาน LookerStudio</button>
+            </nav>
+        </aside>
+
+        <main class="flex-1 overflow-y-auto p-4 md:p-8">
+            
+            <section id="waterPage" class="content-page">
+                <h2 class="text-2xl font-bold text-blue-900 mb-6">รายงานระดับน้ำ</h2>
+                <div class="bg-white p-4 rounded-xl shadow border mb-6">
+                    <canvas id="waterChart" height="100"></canvas>
+                </div>
+                <div id="waterList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            </section>
+
+            <section id="addWaterPage" class="content-page hidden">
+                <h2 class="text-2xl font-bold text-blue-900 mb-6">ส่งรายงานระดับน้ำประจำวัน</h2>
+                <div class="bg-white p-6 rounded-xl shadow border max-w-md mx-auto">
+                    <form onsubmit="saveWater(event)" class="space-y-4">
+                        <select id="water_loc" class="w-full p-2 border rounded" required></select>
+                        <input type="number" id="water_val" placeholder="ระดับน้ำ (ซม.)" class="w-full p-2 border rounded" required>
+                        <button class="w-full bg-blue-600 text-white py-2 rounded font-bold">บันทึกข้อมูล</button>
+                    </form>
+                </div>
+            </section>
+
+            <section id="shelterPage" class="content-page hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-blue-900">สรุปข้อมูลศูนย์พักพิง</h2>
+                    <div class="flex gap-2">
+                        <select id="filterShelter" onchange="renderShelterStats()" class="p-2 border rounded text-sm no-print"></select>
+                        <button onclick="window.print()" class="bg-gray-200 px-4 py-2 rounded text-sm no-print"><i class="fas fa-print mr-1"></i>พิมพ์</button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 text-center">
+                    <div class="bg-white p-4 rounded shadow border-l-4 border-blue-500">
+                        <p class="text-xs text-gray-500 uppercase">คนพักรวม</p>
+                        <h3 id="stat_total" class="text-2xl font-bold">0</h3>
+                    </div>
+                    <div class="bg-white p-4 rounded shadow border-l-4 border-green-500">
+                        <p class="text-xs text-gray-500 uppercase">ครัวเรือน</p>
+                        <h3 id="stat_house" class="text-2xl font-bold">0</h3>
+                    </div>
+                    <div class="bg-white p-4 rounded shadow border-l-4 border-pink-500">
+                        <p class="text-xs text-gray-500 uppercase">ช / ญ</p>
+                        <h3 id="stat_gender" class="text-xl font-bold">0 / 0</h3>
+                    </div>
+                    <div class="bg-white p-4 rounded shadow border-l-4 border-yellow-500">
+                        <p class="text-xs text-gray-500 uppercase">เด็ก / สูงอายุ</p>
+                        <h3 id="stat_age" class="text-xl font-bold">0 / 0</h3>
+                    </div>
+                </div>
+                <div class="bg-white rounded shadow overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-blue-600 text-white">
+                            <tr><th class="p-3">ชื่อ-นามสกุล</th><th class="p-3">เพศ</th><th class="p-3">อายุ</th><th class="p-3">รหัสบ้าน</th><th class="p-3">ศูนย์</th></tr>
+                        </thead>
+                        <tbody id="shelterTable"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="regisPage" class="content-page hidden">
+                <h2 class="text-2xl font-bold text-blue-900 mb-6 text-center">ลงทะเบียนผู้พักพิงใหม่</h2>
+                <div class="bg-white p-6 rounded-xl shadow border max-w-xl mx-auto">
+                    <form onsubmit="saveEvacuee(event)" class="space-y-4">
+                        <select id="reg_shelter" class="w-full p-2 border rounded" required></select>
+                        <input type="text" id="reg_name" placeholder="ชื่อ-นามสกุล" class="w-full p-2 border rounded" required>
+                        <div class="grid grid-cols-2 gap-4">
+                            <select id="reg_gender" class="p-2 border rounded">
+                                <option value="ชาย">ชาย</option>
+                                <option value="หญิง">หญิง</option>
+                            </select>
+                            <input type="number" id="reg_age" placeholder="อายุ" class="p-2 border rounded" required>
+                        </div>
+                        <input type="text" id="reg_house" placeholder="รหัสครอบครัว/บ้านเลขที่" class="w-full p-2 border rounded" required>
+                        <button class="w-full bg-green-600 text-white py-3 rounded font-bold hover:bg-green-700">ยืนยันลงทะเบียน</button>
+                    </form>
+                </div>
+            </section>
+
+            <section id="lookerPage" class="content-page hidden">
+                <iframe src="https://lookerstudio.google.com/embed/reporting/YOUR_ID" class="w-full h-[80vh] rounded shadow border"></iframe>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbwahktsrfbMuVu4oIP2ChrGVsjiGhuGFQWBdnfTitRRRQy5P_ONiRYUUVpsbzh57bFy/exec";
+        let store = { waterPoints:[], shelters:[], evacuees:[], waterLevels:[] };
+        let currentUser = "";
+
+        async function doLogin() {
+            const user = document.getElementById('username').value;
+            if(!user) return alert('กรุณาระบุชื่อ');
+            
+            document.getElementById('loginBtn').innerText = 'กำลังตรวจสอบ...';
+            const res = await fetch(API_URL, { method:'POST', body: JSON.stringify({action:'login', username:user}) });
+            const data = await res.json();
+            
+            if(data.success) {
+                currentUser = user;
+                document.getElementById('loginPage').classList.add('hidden');
+                document.getElementById('mainApp').classList.remove('hidden');
+                loadData();
+            } else {
+                alert('ไม่พบรายชื่อในระบบ');
+                document.getElementById('loginBtn').innerText = 'เข้าใช้งาน';
+            }
+        }
+
+        async function loadData() {
+            const res = await fetch(API_URL, { method:'POST', body: JSON.stringify({action:'getInitialData'}) });
+            store = await res.json();
+            
+            // Populate Dropdowns
+            const locDrop = document.getElementById('water_loc');
+            const shelDrop = document.getElementById('reg_shelter');
+            const filDrop = document.getElementById('filterShelter');
+            
+            locDrop.innerHTML = store.waterPoints.map(p => `<option value="${p}">${p}</option>`).join('');
+            shelDrop.innerHTML = store.shelters.map(s => `<option value="${s}">${s}</option>`).join('');
+            filDrop.innerHTML = `<option value="all">ทุกศูนย์</option>` + store.shelters.map(s => `<option value="${s}">${s}</option>`).join('');
+            
+            renderWaterReport();
+            renderShelterStats();
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.content-page').forEach(p => p.classList.add('hidden'));
+            document.getElementById(pageId + 'Page').classList.remove('hidden');
+            
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active-menu'));
+            event.currentTarget.classList.add('active-menu');
+        }
+
+        function renderWaterReport() {
+            const ctx = document.getElementById('waterChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: store.waterLevels.slice(-5).map(r => new Date(r[0]).toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'})),
+                    datasets: [{ label: 'ระดับน้ำ (ซม.)', data: store.waterLevels.slice(-5).map(r => r[2]), borderColor: '#2563eb', fill: true, backgroundColor: 'rgba(37, 99, 235, 0.1)' }]
+                }
+            });
+
+            document.getElementById('waterList').innerHTML = store.waterLevels.slice(-4).reverse().map(r => `
+                <div class="bg-white p-4 rounded shadow border">
+                    <p class="text-sm text-gray-500">${new Date(r[0]).toLocaleString('th-TH')}</p>
+                    <p class="font-bold text-blue-800">${r[1]}</p>
+                    <p class="text-2xl font-bold">${r[2]} ซม.</p>
+                </div>
+            `).join('');
+        }
+
+        function renderShelterStats() {
+            const filter = document.getElementById('filterShelter').value;
+            const data = filter === 'all' ? store.evacuees : store.evacuees.filter(r => r[1] === filter);
+            
+            document.getElementById('stat_total').innerText = data.length;
+            document.getElementById('stat_house').innerText = [...new Set(data.map(r => r[5]))].length;
+            
+            const male = data.filter(r => r[3] === 'ชาย').length;
+            document.getElementById('stat_gender').innerText = `${male} / ${data.length - male}`;
+            
+            const child = data.filter(r => r[4] < 15).length;
+            const old = data.filter(r => r[4] >= 60).length;
+            document.getElementById('stat_age').innerText = `${child} / ${old}`;
+
+            document.getElementById('shelterTable').innerHTML = data.map(r => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="p-3">${r[2]}</td><td class="p-3">${r[3]}</td><td class="p-3">${r[4]}</td><td class="p-3">${r[5]}</td><td class="p-3">${r[1]}</td>
+                </tr>
+            `).join('');
+        }
+
+        async function saveWater(e) {
+            e.preventDefault();
+            const payload = {
+                action: 'saveWater',
+                location: document.getElementById('water_loc').value,
+                level: document.getElementById('water_val').value,
+                reporter: currentUser
+            };
+            await fetch(API_URL, { method:'POST', body: JSON.stringify(payload) });
+            alert('บันทึกระดับน้ำแล้ว');
+            location.reload();
+        }
+
+        async function saveEvacuee(e) {
+            e.preventDefault();
+            const payload = {
+                action: 'saveEvacuee',
+                shelter: document.getElementById('reg_shelter').value,
+                name: document.getElementById('reg_name').value,
+                gender: document.getElementById('reg_gender').value,
+                age: document.getElementById('reg_age').value,
+                household: document.getElementById('reg_house').value
+            };
+            await fetch(API_URL, { method:'POST', body: JSON.stringify(payload) });
+            alert('ลงทะเบียนสำเร็จ');
+            location.reload();
+        }
+    </script>
+</body>
+</html>
