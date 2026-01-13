@@ -6,238 +6,396 @@
     <title>ระบบเทศบาลตำบลตันหยงมัส</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap');
-        body { font-family: 'Sarabun', sans-serif; }
-        .active-menu { background-color: #ebf8ff; border-left: 4px solid #2563eb; color: #1e40af; }
-        @media print { .no-print { display: none; } .print-only { display: block; } }
+        body { font-family: 'Sarabun', sans-serif; background-color: #f0f9ff; margin: 0; overflow-x: hidden; }
+        .sidebar-expanded { width: 14rem; }
+        .sidebar-collapsed { width: 4.5rem; }
+        .nav-text, .logo-text { transition: opacity 0.2s; }
+        .sidebar-collapsed .nav-text, .sidebar-collapsed .logo-text { display: none; }
+        .active-menu { background-color: #eff6ff; border-left: 4px solid #2563eb; color: #1e40af; font-weight: bold; }
+        .animate-pulse-fast { animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .7; } }
+        #loginPage { position: fixed; inset: 0; z-index: 1000; background-color: #2563eb; display: flex; align-items: center; justify-content: center; }
+        .water-card-img-container { height: 160px; width: 100%; overflow: hidden; background-color: #e2e8f0; position: relative; }
+        .water-card-img-container img { width: 100%; height: 100%; object-fit: cover; }
     </style>
 </head>
-<body class="bg-blue-50">
+<body class="text-slate-700">
 
-    <div id="loginPage" class="fixed inset-0 bg-blue-700 flex items-center justify-center z-50 p-4">
-        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm text-center">
-            <img src="https://img2.pic.in.th/pic/71f81565dc59a7f9545542493a5514ab.png" class="w-24 mx-auto mb-4">
-            <h1 class="text-xl font-bold text-blue-900 mb-6">เข้าสู่ระบบเจ้าหน้าที่</h1>
-            <input type="text" id="username" placeholder="ชื่อผู้ใช้งาน" class="w-full p-3 border rounded-lg mb-4 outline-none focus:ring-2 focus:ring-blue-500">
-            <button onclick="doLogin()" id="loginBtn" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition">เข้าใช้งาน</button>
+    <div id="loginPage">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-sm text-center mx-4">
+            <img src="https://img2.pic.in.th/pic/71f81565dc59a7f9545542493a5514ab.png" class="w-20 mx-auto mb-4">
+            <h1 class="text-xl font-bold text-blue-900 mb-2">เทศบาลตำบลตันหยงมัส</h1>
+            <p class="text-sm text-slate-500 mb-8">ระบบรายงานสถานการณ์น้ำ</p>
+            <input type="text" id="username" placeholder="ระบุชื่อผู้ใช้งาน" class="w-full p-4 border border-blue-100 rounded-2xl mb-4 text-center font-bold outline-none focus:ring-2 focus:ring-blue-400 bg-blue-50">
+            <button onclick="doLogin()" id="loginBtn" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 transition-all active:scale-95 shadow-lg">เข้าใช้งานระบบ</button>
         </div>
     </div>
 
     <div id="mainApp" class="hidden flex min-h-screen">
-        <aside class="w-64 bg-white shadow-xl flex-shrink-0 hidden md:block no-print">
-            <div class="p-6 text-center border-b">
-                <img src="https://img2.pic.in.th/pic/71f81565dc59a7f9545542493a5514ab.png" class="w-16 mx-auto mb-2">
-                <p class="font-bold text-blue-900 text-xs">เทศบาลตำบลตันหยงมัส</p>
+        <aside id="sidebar" class="sidebar-expanded bg-white shadow-md flex-shrink-0 flex flex-col border-r border-blue-50 transition-all duration-300 sticky top-0 h-screen no-print">
+            <div class="p-4 text-center border-b border-blue-50 relative">
+                <img src="https://img2.pic.in.th/pic/71f81565dc59a7f9545542493a5514ab.png" class="w-10 mx-auto">
+                <p class="logo-text text-[10px] font-bold text-blue-800 mt-2 uppercase">Tanyongmas City</p>
             </div>
-            <nav class="p-4 space-y-1">
-                <button onclick="showPage('water')" class="nav-btn w-full text-left p-3 rounded-lg flex items-center text-gray-600 active-menu"><i class="fas fa-water mr-3"></i> สถานการณ์น้ำ</button>
-                <button onclick="showPage('addWater')" class="nav-btn w-full text-left p-3 rounded-lg flex items-center text-gray-600"><i class="fas fa-plus-circle mr-3"></i> เพิ่มรายงานน้ำ</button>
-                <button onclick="showPage('shelter')" class="nav-btn w-full text-left p-3 rounded-lg flex items-center text-gray-600"><i class="fas fa-house-user mr-3"></i> Dashboard ศูนย์พักพิง</button>
-                <button onclick="showPage('regis')" class="nav-btn w-full text-left p-3 rounded-lg flex items-center text-gray-600"><i class="fas fa-user-plus mr-3"></i> ลงทะเบียนเข้าศูนย์</button>
-                <button onclick="showPage('looker')" class="nav-btn w-full text-left p-3 rounded-lg flex items-center text-gray-600"><i class="fas fa-chart-line mr-3"></i> รายงาน LookerStudio</button>
+
+            <nav class="mt-4 flex-1">
+                <button onclick="showPage('water')" class="nav-btn w-full text-left px-6 py-4 flex items-center text-sm text-slate-500 hover:bg-blue-50 active-menu"><i class="fas fa-tint w-6 text-center"></i> <span class="nav-text ml-3">สถานการณ์น้ำ</span></button>
+                <button onclick="showPage('addWater')" class="nav-btn w-full text-left px-6 py-4 flex items-center text-sm text-slate-500 hover:bg-blue-50"><i class="fas fa-plus-circle w-6 text-center"></i> <span class="nav-text ml-3">เพิ่มรายงานน้ำ</span></button>
+                <button onclick="showPage('shelter')" class="nav-btn w-full text-left px-6 py-4 flex items-center text-sm text-slate-500 hover:bg-blue-50"><i class="fas fa-hotel w-6 text-center"></i> <span class="nav-text ml-3">ศูนย์พักพิง</span></button>
+                <button onclick="showPage('regis')" class="nav-btn w-full text-left px-6 py-4 flex items-center text-sm text-slate-500 hover:bg-blue-50"><i class="fas fa-user-plus w-6 text-center"></i> <span class="nav-text ml-3">ลงทะเบียนใหม่</span></button>
+                <button onclick="showPage('looker')" class="nav-btn w-full text-left px-6 py-4 flex items-center text-sm text-slate-500 hover:bg-blue-50"><i class="fas fa-chart-pie w-6 text-center"></i> <span class="nav-text ml-3">Looker Studio</span></button>
             </nav>
+
+            <div class="p-4 border-t border-blue-50">
+                <button onclick="toggleSidebar()" class="w-full flex items-center justify-center p-2 rounded-xl hover:bg-blue-50 text-slate-400 transition-all">
+                    <i id="sideIcon" class="fas fa-chevron-left"></i>
+                    <span class="nav-text ml-2 text-xs font-bold uppercase tracking-wider">ย่อเมนู</span>
+                </button>
+            </div>
         </aside>
 
-        <main class="flex-1 overflow-y-auto p-4 md:p-8">
-            
-            <section id="waterPage" class="content-page">
-                <h2 class="text-2xl font-bold text-blue-900 mb-6">รายงานระดับน้ำ</h2>
-                <div class="bg-white p-4 rounded-xl shadow border mb-6">
-                    <canvas id="waterChart" height="100"></canvas>
+        <main class="flex-1 flex flex-col min-w-0">
+            <header class="bg-white border-b border-blue-50 p-4 px-8 flex justify-between items-center sticky top-0 z-20 shadow-sm">
+                <h2 id="pageTitle" class="font-bold text-blue-900 uppercase">สถานการณ์น้ำปัจจุบัน</h2>
+                <div class="flex items-center gap-3">
+                    <div class="text-[10px] text-blue-500 bg-blue-50 px-3 py-1.5 rounded-full font-bold no-print"><i class="far fa-clock mr-1"></i> <span id="lastUpdate">-</span></div>
+                    <button onclick="loadData()" class="bg-blue-600 text-white w-8 h-8 rounded-lg hover:bg-blue-700 transition no-print shadow-md"><i class="fas fa-sync-alt text-xs"></i></button>
                 </div>
-                <div id="waterList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-            </section>
+            </header>
 
-            <section id="addWaterPage" class="content-page hidden">
-                <h2 class="text-2xl font-bold text-blue-900 mb-6">ส่งรายงานระดับน้ำประจำวัน</h2>
-                <div class="bg-white p-6 rounded-xl shadow border max-w-md mx-auto">
-                    <form onsubmit="saveWater(event)" class="space-y-4">
-                        <select id="water_loc" class="w-full p-2 border rounded" required></select>
-                        <input type="number" id="water_val" placeholder="ระดับน้ำ (ซม.)" class="w-full p-2 border rounded" required>
-                        <button class="w-full bg-blue-600 text-white py-2 rounded font-bold">บันทึกข้อมูล</button>
-                    </form>
-                </div>
-            </section>
-
-            <section id="shelterPage" class="content-page hidden">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-blue-900">สรุปข้อมูลศูนย์พักพิง</h2>
-                    <div class="flex gap-2">
-                        <select id="filterShelter" onchange="renderShelterStats()" class="p-2 border rounded text-sm no-print"></select>
-                        <button onclick="window.print()" class="bg-gray-200 px-4 py-2 rounded text-sm no-print"><i class="fas fa-print mr-1"></i>พิมพ์</button>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 text-center">
-                    <div class="bg-white p-4 rounded shadow border-l-4 border-blue-500">
-                        <p class="text-xs text-gray-500 uppercase">คนพักรวม</p>
-                        <h3 id="stat_total" class="text-2xl font-bold">0</h3>
-                    </div>
-                    <div class="bg-white p-4 rounded shadow border-l-4 border-green-500">
-                        <p class="text-xs text-gray-500 uppercase">ครัวเรือน</p>
-                        <h3 id="stat_house" class="text-2xl font-bold">0</h3>
-                    </div>
-                    <div class="bg-white p-4 rounded shadow border-l-4 border-pink-500">
-                        <p class="text-xs text-gray-500 uppercase">ช / ญ</p>
-                        <h3 id="stat_gender" class="text-xl font-bold">0 / 0</h3>
-                    </div>
-                    <div class="bg-white p-4 rounded shadow border-l-4 border-yellow-500">
-                        <p class="text-xs text-gray-500 uppercase">เด็ก / สูงอายุ</p>
-                        <h3 id="stat_age" class="text-xl font-bold">0 / 0</h3>
-                    </div>
-                </div>
-                <div class="bg-white rounded shadow overflow-x-auto">
-                    <table class="w-full text-left text-sm">
-                        <thead class="bg-blue-600 text-white">
-                            <tr><th class="p-3">ชื่อ-นามสกุล</th><th class="p-3">เพศ</th><th class="p-3">อายุ</th><th class="p-3">รหัสบ้าน</th><th class="p-3">ศูนย์</th></tr>
-                        </thead>
-                        <tbody id="shelterTable"></tbody>
-                    </table>
-                </div>
-            </section>
-
-            <section id="regisPage" class="content-page hidden">
-                <h2 class="text-2xl font-bold text-blue-900 mb-6 text-center">ลงทะเบียนผู้พักพิงใหม่</h2>
-                <div class="bg-white p-6 rounded-xl shadow border max-w-xl mx-auto">
-                    <form onsubmit="saveEvacuee(event)" class="space-y-4">
-                        <select id="reg_shelter" class="w-full p-2 border rounded" required></select>
-                        <input type="text" id="reg_name" placeholder="ชื่อ-นามสกุล" class="w-full p-2 border rounded" required>
-                        <div class="grid grid-cols-2 gap-4">
-                            <select id="reg_gender" class="p-2 border rounded">
-                                <option value="ชาย">ชาย</option>
-                                <option value="หญิง">หญิง</option>
-                            </select>
-                            <input type="number" id="reg_age" placeholder="อายุ" class="p-2 border rounded" required>
+            <div class="p-4 md:p-8 max-w-7xl mx-auto w-full">
+                
+                <section id="waterPage" class="content-page">
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-blue-50 mb-8">
+                        <div class="flex flex-wrap gap-4 items-end mb-6 no-print">
+                            <div class="flex-1 min-w-[150px]">
+                                <label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">ตัวกรองพื้นที่ (เฉพาะที่มีข้อมูล)</label>
+                                <select id="chartLocFilter" onchange="updateWaterChart()" class="w-full p-2.5 bg-blue-50/50 border border-blue-100 rounded-xl text-xs outline-none focus:ring-1 focus:ring-blue-300"></select>
+                            </div>
+                            <div class="flex-1 min-w-[250px]">
+                                <label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">ช่วงเวลา</label>
+                                <div class="flex gap-2">
+                                    <input type="date" id="startDate" onchange="updateWaterChart()" class="p-2.5 bg-blue-50/50 border border-blue-100 rounded-xl text-xs flex-1 outline-none">
+                                    <input type="date" id="endDate" onchange="updateWaterChart()" class="p-2.5 bg-blue-50/50 border border-blue-100 rounded-xl text-xs flex-1 outline-none">
+                                </div>
+                            </div>
+                            <div class="flex gap-1 bg-slate-100 p-1 rounded-xl">
+                                <button onclick="setDateFilter('today')" class="px-3 py-1.5 text-[10px] font-bold rounded-lg hover:bg-white transition">วันนี้</button>
+                                <button onclick="setDateFilter('yesterday')" class="px-3 py-1.5 text-[10px] font-bold rounded-lg hover:bg-white transition">เมื่อวาน</button>
+                                <button onclick="setDateFilter('week')" class="px-3 py-1.5 text-[10px] font-bold rounded-lg hover:bg-white transition">7 วัน</button>
+                            </div>
                         </div>
-                        <input type="text" id="reg_house" placeholder="รหัสครอบครัว/บ้านเลขที่" class="w-full p-2 border rounded" required>
-                        <button class="w-full bg-green-600 text-white py-3 rounded font-bold hover:bg-green-700">ยืนยันลงทะเบียน</button>
-                    </form>
-                </div>
-            </section>
+                        <div class="h-[350px]"><canvas id="waterChart"></canvas></div>
+                    </div>
 
-            <section id="lookerPage" class="content-page hidden">
-                <iframe src="https://lookerstudio.google.com/embed/reporting/YOUR_ID" class="w-full h-[80vh] rounded shadow border"></iframe>
-            </section>
+                    <div class="mb-4 flex justify-between items-center">
+                        <h3 class="font-bold text-blue-900">รายการล่าสุดของแต่ละพื้นที่</h3>
+                        <select id="cardLocFilter" onchange="renderWaterCards()" class="p-2 bg-white border border-blue-100 rounded-xl text-[10px] shadow-sm font-bold no-print outline-none"></select>
+                    </div>
+                    <div id="waterList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+                </section>
 
+                <section id="addWaterPage" class="content-page hidden">
+                    <div class="bg-white p-6 md:p-10 rounded-3xl shadow-lg border border-blue-50 max-w-2xl mx-auto">
+                        <h3 class="text-xl font-bold text-blue-900 mb-6 flex items-center font-bold tracking-tight"><i class="fas fa-camera-retro mr-3 text-blue-500"></i> บันทึกระดับน้ำ</h3>
+                        <form id="waterForm" onsubmit="saveWater(event)" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="text-xs font-bold text-slate-500 ml-1">พื้นที่จุดวัดน้ำ</label><select id="water_loc" class="w-full p-3 border border-blue-100 bg-blue-50 rounded-xl outline-none" required></select></div>
+                                <div><label class="text-xs font-bold text-slate-500 ml-1">แนวโน้มน้ำ</label>
+                                    <select id="water_trend" class="w-full p-3 border border-blue-100 bg-blue-50 rounded-xl outline-none" required>
+                                        <option value="เพิ่มขึ้น">เพิ่มขึ้น (สีแดง)</option>
+                                        <option value="คงตัว" selected>คงตัว (สีเหลือง)</option>
+                                        <option value="ลดลง">ลดลง (สีเขียว)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="text-xs font-bold text-slate-500 ml-1">ระดับน้ำ (ซม.)</label><input type="number" id="water_val" class="w-full p-3 border border-blue-100 bg-blue-50 rounded-xl font-bold text-blue-600 outline-none" required></div>
+                                <div><label class="text-xs font-bold text-slate-500 ml-1">พิกัด GPS</label><div class="flex gap-2"><input type="text" id="water_coords" readonly class="w-full p-3 border border-blue-100 bg-gray-100 rounded-xl text-[10px] outline-none" placeholder="ดึงพิกัดอัตโนมัติ"><button type="button" onclick="getLocation()" class="bg-blue-100 text-blue-600 px-4 rounded-xl hover:bg-blue-200 transition"><i class="fas fa-map-marker-alt"></i></button></div></div>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-500 ml-1">รูปถ่ายสถานการณ์</label>
+                                <input type="file" id="water_img" accept="image/*" capture="environment" onchange="previewImg(event)" class="hidden">
+                                <div onclick="document.getElementById('water_img').click()" class="border-2 border-dashed border-blue-200 rounded-2xl h-40 flex flex-col items-center justify-center cursor-pointer hover:bg-blue-50 transition overflow-hidden" id="img_preview_box">
+                                    <i class="fas fa-camera text-3xl text-blue-300"></i>
+                                    <p class="text-xs text-blue-400 mt-2">แตะเพื่อเปิดกล้อง</p>
+                                </div>
+                            </div>
+                            <div><label class="text-xs font-bold text-slate-500 ml-1">รายละเอียดเพิ่มเติม</label><textarea id="water_note" class="w-full p-3 border border-blue-100 bg-blue-50 rounded-xl h-20 outline-none"></textarea></div>
+                            <button id="saveWaterBtn" type="submit" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-xl hover:bg-blue-700 transition active:scale-95">ส่งรายงานพร้อมรูปภาพ</button>
+                        </form>
+                    </div>
+                </section>
+
+                <section id="shelterPage" class="content-page hidden"><div class="bg-white p-10 rounded-3xl text-center text-slate-400">ระบบฐานข้อมูลศูนย์พักพิง</div></section>
+                <section id="regisPage" class="content-page hidden"><div class="bg-white p-10 rounded-3xl text-center text-slate-400">ระบบลงทะเบียนผู้ประสบภัย</div></section>
+                <section id="lookerPage" class="content-page hidden"><iframe src="" id="lookerFrame" class="w-full h-[80vh] rounded-3xl border-0 shadow-sm bg-white"></iframe></section>
+
+            </div>
         </main>
     </div>
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbwahktsrfbMuVu4oIP2ChrGVsjiGhuGFQWBdnfTitRRRQy5P_ONiRYUUVpsbzh57bFy/exec";
-        let store = { waterPoints:[], shelters:[], evacuees:[], waterLevels:[] };
+        const LOOKER_URL = "https://lookerstudio.google.com/embed/reporting/your_id_here";
+        
+        let store = { waterPoints:[], waterLevels:[] };
         let currentUser = "";
+        let waterChartInstance = null;
 
-        async function doLogin() {
-            const user = document.getElementById('username').value;
-            if(!user) return alert('กรุณาระบุชื่อ');
-            
-            document.getElementById('loginBtn').innerText = 'กำลังตรวจสอบ...';
-            const res = await fetch(API_URL, { method:'POST', body: JSON.stringify({action:'login', username:user}) });
-            const data = await res.json();
-            
-            if(data.success) {
-                currentUser = user;
-                document.getElementById('loginPage').classList.add('hidden');
-                document.getElementById('mainApp').classList.remove('hidden');
-                loadData();
-            } else {
-                alert('ไม่พบรายชื่อในระบบ');
-                document.getElementById('loginBtn').innerText = 'เข้าใช้งาน';
-            }
-        }
-
-        async function loadData() {
-            const res = await fetch(API_URL, { method:'POST', body: JSON.stringify({action:'getInitialData'}) });
-            store = await res.json();
-            
-            // Populate Dropdowns
-            const locDrop = document.getElementById('water_loc');
-            const shelDrop = document.getElementById('reg_shelter');
-            const filDrop = document.getElementById('filterShelter');
-            
-            locDrop.innerHTML = store.waterPoints.map(p => `<option value="${p}">${p}</option>`).join('');
-            shelDrop.innerHTML = store.shelters.map(s => `<option value="${s}">${s}</option>`).join('');
-            filDrop.innerHTML = `<option value="all">ทุกศูนย์</option>` + store.shelters.map(s => `<option value="${s}">${s}</option>`).join('');
-            
-            renderWaterReport();
-            renderShelterStats();
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const sideIcon = document.getElementById('sideIcon');
+            sidebar.classList.toggle('sidebar-expanded');
+            sidebar.classList.toggle('sidebar-collapsed');
+            sideIcon.classList.toggle('fa-chevron-left');
+            sideIcon.classList.toggle('fa-chevron-right');
         }
 
         function showPage(pageId) {
             document.querySelectorAll('.content-page').forEach(p => p.classList.add('hidden'));
             document.getElementById(pageId + 'Page').classList.remove('hidden');
-            
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active-menu'));
-            event.currentTarget.classList.add('active-menu');
+            const clickedBtn = Array.from(document.querySelectorAll('.nav-btn')).find(btn => btn.getAttribute('onclick').includes(pageId));
+            if(clickedBtn) clickedBtn.classList.add('active-menu');
+            
+            const titles = { water:'สถานการณ์น้ำปัจจุบัน', addWater:'ส่งรายงานระดับน้ำ', shelter:'สถิติศูนย์พักพิง', regis:'ลงทะเบียนผู้ประสบภัย', looker:'Looker Studio' };
+            document.getElementById('pageTitle').innerText = titles[pageId];
+            if(pageId === 'looker') document.getElementById('lookerFrame').src = LOOKER_URL;
         }
 
-        function renderWaterReport() {
-            const ctx = document.getElementById('waterChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: store.waterLevels.slice(-5).map(r => new Date(r[0]).toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'})),
-                    datasets: [{ label: 'ระดับน้ำ (ซม.)', data: store.waterLevels.slice(-5).map(r => r[2]), borderColor: '#2563eb', fill: true, backgroundColor: 'rgba(37, 99, 235, 0.1)' }]
+        async function doLogin() {
+            const user = document.getElementById('username').value.trim();
+            if(!user) return Swal.fire('แจ้งเตือน', 'กรุณาระบุชื่อผู้ใช้งาน', 'warning');
+            const btn = document.getElementById('loginBtn');
+            btn.innerText = 'กำลังตรวจสอบ...'; btn.disabled = true;
+
+            try {
+                const res = await fetch(API_URL, { method:'POST', body: JSON.stringify({action:'login', username:user}) });
+                const data = await res.json();
+                if(data.success) {
+                    currentUser = user;
+                    document.getElementById('loginPage').style.display = 'none';
+                    document.getElementById('mainApp').classList.remove('hidden');
+                    await loadData();
+                } else {
+                    Swal.fire('ผิดพลาด', 'ไม่พบชื่อผู้ใช้งานในระบบ', 'error');
+                    btn.innerText = 'เข้าใช้งานระบบ'; btn.disabled = false;
                 }
+            } catch(e) {
+                Swal.fire('ผิดพลาด', 'การเชื่อมต่อล้มเหลว ตรวจสอบ URL ของ Apps Script', 'error');
+                btn.disabled = false;
+            }
+        }
+
+        async function loadData() {
+            try {
+                const res = await fetch(API_URL, { method:'POST', body: JSON.stringify({action:'getInitialData'}) });
+                store = await res.json();
+                
+                // Dropdown พื้นที่ทั้งหมดสำหรับส่งรายงาน
+                const pOpts = store.waterPoints.map(v => `<option value="${v}">${v}</option>`).join('');
+                document.getElementById('water_loc').innerHTML = pOpts;
+
+                // กรองเฉพาะชื่อพื้นที่ที่มีข้อมูลส่งเข้ามาแล้วจริงๆ (Active Areas)
+                const activeAreas = [...new Set(store.waterLevels.map(r => r[1]))].sort();
+                const activeOpts = activeAreas.map(v => `<option value="${v}">${v}</option>`).join('');
+                const filterHtml = '<option value="all">ทุกพื้นที่ (ที่มีข้อมูล)</option>' + activeOpts;
+                
+                document.getElementById('chartLocFilter').innerHTML = filterHtml;
+                document.getElementById('cardLocFilter').innerHTML = filterHtml;
+                
+                document.getElementById('lastUpdate').innerText = new Date().toLocaleTimeString('th-TH') + " น.";
+                setDateFilter('week');
+                renderWaterCards();
+            } catch(e) { console.error("Load Data Error", e); }
+        }
+
+        function setDateFilter(type) {
+            const end = new Date(); let start = new Date();
+            if (type === 'today') start.setHours(0,0,0,0);
+            else if (type === 'yesterday') { start.setDate(end.getDate() - 1); start.setHours(0,0,0,0); end.setDate(end.getDate() - 1); end.setHours(23,59,59); }
+            else if (type === 'week') start.setDate(end.getDate() - 7);
+            document.getElementById('startDate').valueAsDate = start;
+            document.getElementById('endDate').valueAsDate = end;
+            updateWaterChart();
+        }
+
+        function updateWaterChart() {
+            const loc = document.getElementById('chartLocFilter').value;
+            const start = new Date(document.getElementById('startDate').value);
+            const end = new Date(document.getElementById('endDate').value);
+            if(!isNaN(end)) end.setHours(23,59,59);
+
+            let filtered = store.waterLevels.filter(r => {
+                const d = new Date(r[0]);
+                return (loc === 'all' || r[1] === loc) && (isNaN(start) || d >= start) && (isNaN(end) || d <= end);
+            }).sort((a,b) => new Date(a[0]) - new Date(b[0]));
+
+            const datasets = [];
+            const activeAreas = loc === 'all' ? [...new Set(filtered.map(r => r[1]))] : [loc];
+            const colors = ['#2563eb', '#dc2626', '#059669', '#ca8a04', '#7c3aed'];
+
+            activeAreas.forEach((area, i) => {
+                const areaData = filtered.filter(r => r[1] === area);
+                datasets.push({
+                    label: area,
+                    data: areaData.map(r => ({ x: new Date(r[0]), y: r[2] })),
+                    borderColor: colors[i % colors.length],
+                    borderWidth: 3, tension: 0.3, pointRadius: 4, pointHoverRadius: 8
+                });
             });
 
-            document.getElementById('waterList').innerHTML = store.waterLevels.slice(-4).reverse().map(r => `
-                <div class="bg-white p-4 rounded shadow border">
-                    <p class="text-sm text-gray-500">${new Date(r[0]).toLocaleString('th-TH')}</p>
-                    <p class="font-bold text-blue-800">${r[1]}</p>
-                    <p class="text-2xl font-bold">${r[2]} ซม.</p>
-                </div>
-            `).join('');
+            const ctx = document.getElementById('waterChart').getContext('2d');
+            if (waterChartInstance) waterChartInstance.destroy();
+            waterChartInstance = new Chart(ctx, {
+                type: 'line', data: { datasets },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    interaction: { mode: 'nearest', intersect: false, axis: 'x' },
+                    plugins: { 
+                        tooltip: { 
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)', titleColor: '#1e40af', bodyColor: '#334155', borderColor: '#e2e8f0', borderWidth: 1, padding: 10,
+                            callbacks: { 
+                                label: (ctx) => ` พื้นที่ ${ctx.dataset.label}: ${ctx.parsed.y} ซม.`,
+                                title: (ctx) => `ข้อมูลวันที่: ${new Date(ctx[0].parsed.x).toLocaleString('th-TH', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'})} น.`
+                            } 
+                        } 
+                    },
+                    scales: { 
+                        x: { 
+                            type: 'time', 
+                            time: { displayFormats: { day: 'dd MMM', hour: 'HH:mm' } }, 
+                            grid: { display: false } 
+                        },
+                        y: { title: { display: true, text: 'ระดับน้ำ (ซม.)' } }
+                    }
+                }
+            });
         }
 
-        function renderShelterStats() {
-            const filter = document.getElementById('filterShelter').value;
-            const data = filter === 'all' ? store.evacuees : store.evacuees.filter(r => r[1] === filter);
-            
-            document.getElementById('stat_total').innerText = data.length;
-            document.getElementById('stat_house').innerText = [...new Set(data.map(r => r[5]))].length;
-            
-            const male = data.filter(r => r[3] === 'ชาย').length;
-            document.getElementById('stat_gender').innerText = `${male} / ${data.length - male}`;
-            
-            const child = data.filter(r => r[4] < 15).length;
-            const old = data.filter(r => r[4] >= 60).length;
-            document.getElementById('stat_age').innerText = `${child} / ${old}`;
+        function renderWaterCards() {
+            const filter = document.getElementById('cardLocFilter').value;
+            let displayData = [];
 
-            document.getElementById('shelterTable').innerHTML = data.map(r => `
-                <tr class="border-b hover:bg-gray-50">
-                    <td class="p-3">${r[2]}</td><td class="p-3">${r[3]}</td><td class="p-3">${r[4]}</td><td class="p-3">${r[5]}</td><td class="p-3">${r[1]}</td>
-                </tr>
-            `).join('');
+            if (filter === 'all') {
+                const activeAreas = [...new Set(store.waterLevels.map(r => r[1]))];
+                activeAreas.forEach(area => {
+                    const latest = store.waterLevels.filter(r => r[1] === area).sort((a,b) => new Date(b[0]) - new Date(a[0]))[0];
+                    if (latest) displayData.push(latest);
+                });
+                displayData.sort((a,b) => new Date(b[0]) - new Date(a[0]));
+            } else {
+                displayData = store.waterLevels.filter(r => r[1] === filter).sort((a,b) => new Date(b[0]) - new Date(a[0]));
+            }
+
+            document.getElementById('waterList').innerHTML = displayData.slice(0, 12).map(r => {
+                const trend = r[4] || 'คงตัว';
+                const photoUrl = r[6] || '';
+                let displayLink = photoUrl;
+                if (photoUrl.includes("id=")) {
+                    const id = photoUrl.split("id=")[1];
+                    displayLink = `https://drive.google.com/thumbnail?id=${id}&sz=w400`;
+                }
+
+                let cardStyle = "bg-white text-slate-700";
+                let badgeStyle = "bg-blue-100 text-blue-600";
+                
+                if (trend === 'เพิ่มขึ้น') { cardStyle = "bg-red-600 text-white animate-pulse-fast"; badgeStyle = "bg-red-800 text-white"; }
+                else if (trend === 'คงตัว') { cardStyle = "bg-yellow-400 text-slate-900"; badgeStyle = "bg-yellow-600 text-white"; }
+                else if (trend === 'ลดลง') { cardStyle = "bg-green-500 text-white"; badgeStyle = "bg-green-700 text-white"; }
+
+                return `
+                    <div class="rounded-3xl border shadow-lg overflow-hidden transition-all hover:scale-[1.02] ${cardStyle}">
+                        <div class="water-card-img-container">
+                            ${displayLink ? `<img src="${displayLink}" onerror="this.src='https://placehold.co/400x300?text=No+Photo'" class="w-full h-full object-cover">` : 
+                            `<div class="w-full h-full flex flex-col items-center justify-center text-slate-300 italic text-[10px]"><i class="fas fa-image text-2xl mb-1"></i>ไม่มีรูป</div>`}
+                        </div>
+                        <div class="p-5">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-[9px] font-bold px-3 py-1 rounded-full ${badgeStyle}">${new Date(r[0]).toLocaleTimeString('th-TH')} น.</span>
+                                <i class="fas ${trend==='เพิ่มขึ้น'?'fa-arrow-up':(trend==='ลดลง'?'fa-arrow-down':'fa-arrows-alt-h')}"></i>
+                            </div>
+                            <p class="text-xs font-bold uppercase truncate tracking-tight">${r[1]}</p>
+                            <p class="text-3xl font-black mt-1">${r[2]} <span class="text-sm font-normal opacity-70 italic">ซม.</span></p>
+                            <div class="mt-4 pt-4 border-t border-black/10 text-[9px] opacity-90 flex flex-col gap-1">
+                                <div><i class="fas fa-chart-line mr-1"></i> แนวโน้ม: ${trend}</div>
+                                <div><i class="fas fa-user-edit mr-1"></i> ผู้แจ้ง: ${r[3]}</div>
+                                ${r[5] ? `<a href="https://www.google.com/maps?q=${r[5]}" target="_blank" class="text-blue-200 underline font-bold mt-1 block"><i class="fas fa-map-marker-alt"></i> ดูพิกัดบนแผนที่</a>` : ''}
+                            </div>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        // --- GPS & Camera Functions ---
+        function getLocation() {
+            if (navigator.geolocation) {
+                Swal.fire({ title: 'กำลังดึงพิกัด...', didOpen: () => Swal.showLoading() });
+                navigator.geolocation.getCurrentPosition((p) => {
+                    document.getElementById('water_coords').value = `${p.coords.latitude},${p.coords.longitude}`;
+                    Swal.close();
+                }, () => Swal.fire('เปิด GPS เพื่อระบุพิกัด', '', 'error'));
+            }
+        }
+
+        function previewImg(e) {
+            const f = e.target.files[0];
+            if (f) {
+                const r = new FileReader();
+                r.onload = (ev) => {
+                    document.getElementById('img_preview_box').innerHTML = `<img src="${ev.target.result}" class="h-full w-full object-cover">`;
+                };
+                r.readAsDataURL(f);
+            }
         }
 
         async function saveWater(e) {
             e.preventDefault();
-            const payload = {
-                action: 'saveWater',
-                location: document.getElementById('water_loc').value,
-                level: document.getElementById('water_val').value,
-                reporter: currentUser
-            };
-            await fetch(API_URL, { method:'POST', body: JSON.stringify(payload) });
-            alert('บันทึกระดับน้ำแล้ว');
-            location.reload();
-        }
+            const btn = document.getElementById('saveWaterBtn');
+            Swal.fire({ title: 'กำลังบันทึกข้อมูล...', text: 'ระบบกำลังอัปโหลดรูปภาพและพิกัด', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            
+            try {
+                btn.disabled = true;
+                const file = document.getElementById('water_img').files[0];
+                let imageData = null, imageType = null;
+                if (file) {
+                    imageData = await new Promise(res => {
+                        const r = new FileReader();
+                        r.onload = (ev) => res(ev.target.result);
+                        r.readAsDataURL(file);
+                    });
+                    imageType = file.type;
+                }
 
-        async function saveEvacuee(e) {
-            e.preventDefault();
-            const payload = {
-                action: 'saveEvacuee',
-                shelter: document.getElementById('reg_shelter').value,
-                name: document.getElementById('reg_name').value,
-                gender: document.getElementById('reg_gender').value,
-                age: document.getElementById('reg_age').value,
-                household: document.getElementById('reg_house').value
-            };
-            await fetch(API_URL, { method:'POST', body: JSON.stringify(payload) });
-            alert('ลงทะเบียนสำเร็จ');
-            location.reload();
+                const payload = {
+                    action: 'saveWater',
+                    location: document.getElementById('water_loc').value,
+                    level: document.getElementById('water_val').value,
+                    trend: document.getElementById('water_trend').value,
+                    coords: document.getElementById('water_coords').value,
+                    note: document.getElementById('water_note').value,
+                    reporter: currentUser,
+                    imageData, imageType
+                };
+
+                const res = await fetch(API_URL, { method:'POST', body: JSON.stringify(payload) });
+                const data = await res.json();
+                
+                if(data.success) {
+                    Swal.fire('สำเร็จ', 'บันทึกรายงานน้ำเรียบร้อยแล้ว', 'success').then(() => {
+                        document.getElementById('waterForm').reset();
+                        document.getElementById('img_preview_box').innerHTML = `<i class="fas fa-camera text-3xl text-blue-300"></i><p class="text-xs text-blue-400 mt-2">แตะเพื่อเปิดกล้อง</p>`;
+                        loadData(); showPage('water');
+                    });
+                } else { throw new Error(data.error); }
+            } catch(err) { Swal.fire('ผิดพลาด', 'บันทึกไม่สำเร็จ: ' + err.message, 'error'); }
+            finally { btn.disabled = false; }
         }
     </script>
 </body>
