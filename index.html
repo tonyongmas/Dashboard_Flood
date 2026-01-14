@@ -27,8 +27,15 @@
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .7; } }
         
         #loginPage { position: fixed; inset: 0; z-index: 1000; background-color: #2563eb; display: flex; align-items: center; justify-content: center; }
-        .water-card-img-container { height: 160px; width: 100%; overflow: hidden; background-color: #e2e8f0; position: relative; }
-        .water-card-img-container img { width: 100%; height: 100%; object-fit: cover; }
+        /* ค้นหาส่วน <style> และเพิ่ม/แก้ไขโค้ดด้านล่างนี้ */
+        .water-card-img-container { height: 100px; width: 100%; overflow: hidden; background-color: #e2e8f0; } /* เริ่มต้นที่ 100px สำหรับมือถือ */
+            @media (min-width: 768px) { .water-card-img-container { height: 160px; } } /* ขยายเป็น 160px สำหรับคอมพิวเตอร์ */
+
+            @media (max-width: 767px) {
+                .main-content-area { padding-bottom: 120px !important; } /* เพิ่มช่องว่างด้านล่างกัน Bottom Bar บัง */
+                .card-title { font-size: 0.75rem; } /* ย่อชื่อพื้นที่ */
+                .card-value { font-size: 1.25rem; } /* ย่อตัวเลขระดับน้ำ */
+        }
 
         /* Responsive Display Logic */
         @media (max-width: 767px) {
@@ -82,23 +89,23 @@
         <div class="bottom-nav-mobile hidden fixed bottom-0 left-0 right-0 bg-white border-t border-blue-100 justify-around items-center py-2 px-1 z-50 shadow-[0_-2px_15px_rgba(0,0,0,0.08)]">
             <button onclick="showPage('water')" class="mobile-nav-btn flex flex-col items-center flex-1 text-slate-400 py-1" data-page="water">
                 <i class="fas fa-tint text-xl"></i>
-                <span class="text-[10px] mt-1 font-bold">หน้าหลัก</span>
+                <span class="text-[10px] mt-1 font-bold">สถานการณ์น้ำ</span>
             </button>
             <button onclick="showPage('addWater')" class="mobile-nav-btn flex flex-col items-center flex-1 text-slate-400 py-1" data-page="addWater">
                 <i class="fas fa-plus-circle text-xl"></i>
-                <span class="text-[10px] mt-1 font-bold">แจ้งน้ำ</span>
+                <span class="text-[10px] mt-1 font-bold">รายงานระดับน้ำ</span>
             </button>
             <button onclick="showPage('shelter')" class="mobile-nav-btn flex flex-col items-center flex-1 text-slate-400 py-1" data-page="shelter">
                 <i class="fas fa-hotel text-xl"></i>
-                <span class="text-[10px] mt-1 font-bold">ที่พัก</span>
+                <span class="text-[10px] mt-1 font-bold">ศูนย์พักพิง</span>
             </button>
-            <button onclick="showPage('looker')" class="mobile-nav-btn flex flex-col items-center flex-1 text-slate-400 py-1" data-page="looker">
+            <button onclick="showPage('regis')" class="mobile-nav-btn flex flex-col items-center flex-1 text-slate-400 py-1" data-page="looker">
                 <i class="fas fa-chart-pie text-xl"></i>
-                <span class="text-[10px] mt-1 font-bold">สถิติ</span>
+                <span class="text-[10px] mt-1 font-bold">ลงทะเบียน</span>
             </button>
         </div>
 
-        <main class="flex-1 flex flex-col min-w-0">
+        <main class="flex-1 flex flex-col min-w-0 main-content-area">
             <header class="bg-white border-b border-blue-50 p-4 px-6 md:px-8 flex justify-between items-center sticky top-0 z-20 shadow-sm">
                 <h2 id="pageTitle" class="font-bold text-blue-900 uppercase text-sm md:text-base tracking-wide">สถานการณ์น้ำปัจจุบัน</h2>
                 <div class="flex items-center gap-2">
@@ -136,7 +143,7 @@
                         <h3 class="font-bold text-blue-900 text-sm md:text-base">รายการล่าสุดของแต่ละพื้นที่</h3>
                         <select id="cardLocFilter" onchange="renderWaterCards()" class="p-2 bg-white border border-blue-100 rounded-xl text-[10px] shadow-sm font-bold no-print outline-none"></select>
                     </div>
-                    <div id="waterList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+                    <div id="waterList" class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6"></div>
                 </section>
 
                 <section id="addWaterPage" class="content-page hidden">
@@ -309,47 +316,49 @@
         }
 
         function renderWaterCards() {
-            const filter = document.getElementById('cardLocFilter').value;
-            let displayData = [];
-            if (filter === 'all') {
-                const activeAreas = [...new Set(store.waterLevels.map(r => r[1]))];
-                activeAreas.forEach(area => {
-                    const latest = store.waterLevels.filter(r => r[1] === area).sort((a,b) => new Date(b[0]) - new Date(a[0]))[0];
-                    if (latest) displayData.push(latest);
-                });
-                displayData.sort((a,b) => new Date(b[0]) - new Date(a[0]));
-            } else {
-                displayData = store.waterLevels.filter(r => r[1] === filter).sort((a,b) => new Date(b[0]) - new Date(a[0]));
-            }
-            document.getElementById('waterList').innerHTML = displayData.slice(0, 12).map(r => {
-                const trend = r[4] || 'คงตัว';
-                const photoUrl = r[6] || '';
-                let displayLink = photoUrl.includes("id=") ? `https://drive.google.com/thumbnail?id=${photoUrl.split("id=")[1]}&sz=w400` : photoUrl;
-                let cardStyle = "bg-white text-slate-700", badgeStyle = "bg-blue-100 text-blue-600";
-                if (trend === 'เพิ่มขึ้น') { cardStyle = "bg-red-600 text-white animate-pulse-fast"; badgeStyle = "bg-red-800 text-white"; }
-                else if (trend === 'คงตัว') { cardStyle = "bg-yellow-400 text-slate-900"; badgeStyle = "bg-yellow-600 text-white"; }
-                else if (trend === 'ลดลง') { cardStyle = "bg-green-500 text-white"; badgeStyle = "bg-green-700 text-white"; }
-                return `<div class="rounded-3xl border shadow-sm overflow-hidden transition-all active:scale-[0.98] ${cardStyle}">
-                        <div class="water-card-img-container">
-                            ${displayLink ? `<img src="${displayLink}" onerror="this.src='https://placehold.co/400x300?text=No+Photo'">` : 
-                            `<div class="w-full h-full flex flex-col items-center justify-center text-slate-300 italic text-[10px]"><i class="fas fa-image text-2xl mb-1"></i>ไม่มีรูป</div>`}
-                        </div>
-                        <div class="p-4 md:p-5">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="text-[9px] font-bold px-2 py-0.5 rounded-full ${badgeStyle}">${new Date(r[0]).toLocaleTimeString('th-TH')} น.</span>
-                                <i class="fas ${trend==='เพิ่มขึ้น'?'fa-arrow-up':(trend==='ลดลง'?'fa-arrow-down':'fa-arrows-alt-h')}"></i>
-                            </div>
-                            <p class="text-xs font-bold uppercase truncate">${r[1]}</p>
-                            <p class="text-2xl md:text-3xl font-black mt-1">${r[2]} <span class="text-xs font-normal opacity-70 italic">ซม.</span></p>
-                            <div class="mt-4 pt-3 border-t border-black/5 text-[9px] opacity-90 flex flex-col gap-1">
-                                <div><i class="fas fa-user-edit mr-1"></i>${r[3]}</div>
-                                ${r[5] ? `<a href="http://googleusercontent.com/maps.google.com/8{r[5]}" target="_blank" class="font-bold underline tracking-tighter italic">ดูแผนที่</a>` : ''}
-                            </div>
-                        </div>
-                    </div>`;
-            }).join('');
-        }
+    const filter = document.getElementById('cardLocFilter').value;
+    let displayData = [];
+    if (filter === 'all') {
+        const activeAreas = [...new Set(store.waterLevels.map(r => r[1]))];
+        activeAreas.forEach(area => {
+            const latest = store.waterLevels.filter(r => r[1] === area).sort((a,b) => new Date(b[0]) - new Date(a[0]))[0];
+            if (latest) displayData.push(latest);
+        });
+        displayData.sort((a,b) => new Date(b[0]) - new Date(a[0]));
+    } else {
+        displayData = store.waterLevels.filter(r => r[1] === filter).sort((a,b) => new Date(b[0]) - new Date(a[0]));
+    }
 
+    document.getElementById('waterList').innerHTML = displayData.slice(0, 12).map(r => {
+        const trend = r[4] || 'คงตัว';
+        const photoUrl = r[6] || '';
+        let displayLink = photoUrl.includes("id=") ? `https://drive.google.com/thumbnail?id=${photoUrl.split("id=")[1]}&sz=w400` : photoUrl;
+
+        let cardStyle = "bg-white text-slate-700", badgeStyle = "bg-blue-100 text-blue-600";
+        if (trend === 'เพิ่มขึ้น') { cardStyle = "bg-red-600 text-white animate-pulse-fast"; badgeStyle = "bg-red-800 text-white"; }
+        else if (trend === 'คงตัว') { cardStyle = "bg-yellow-400 text-slate-900"; badgeStyle = "bg-yellow-600 text-white"; }
+        else if (trend === 'ลดลง') { cardStyle = "bg-green-500 text-white"; badgeStyle = "bg-green-700 text-white"; }
+
+        return `
+            <div class="rounded-2xl border shadow-sm overflow-hidden transition-all active:scale-[0.98] ${cardStyle}">
+                <div class="water-card-img-container">
+                    ${displayLink ? `<img src="${displayLink}" onerror="this.src='https://placehold.co/400x300?text=No+Photo'">` : 
+                    `<div class="w-full h-full flex flex-col items-center justify-center text-slate-300 italic text-[10px]"><i class="fas fa-image text-xl"></i></div>`}
+                </div>
+                <div class="p-3 md:p-5">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-[8px] md:text-[9px] font-bold px-1.5 py-0.5 rounded-full ${badgeStyle}">${new Date(r[0]).toLocaleTimeString('th-TH')}</span>
+                        <i class="fas ${trend==='เพิ่มขึ้น'?'fa-arrow-up':(trend==='ลดลง'?'fa-arrow-down':'fa-arrows-alt-h')} text-[10px]"></i>
+                    </div>
+                    <p class="text-[10px] md:text-xs font-bold truncate card-title">${r[1]}</p>
+                    <p class="font-black card-value">${r[2]} <span class="text-[9px] font-normal opacity-70 italic">ซม.</span></p>
+                    <div class="mt-2 pt-2 border-t border-black/5 text-[8px] opacity-80 hidden md:block">
+                        <i class="fas fa-user-edit mr-1"></i>${r[3]}
+                    </div>
+                </div>
+            </div>`;
+    }).join('');
+}
         // --- Utils ---
         function getLocation() {
             if (navigator.geolocation) {
@@ -401,3 +410,4 @@
     </script>
 </body>
 </html>
+
