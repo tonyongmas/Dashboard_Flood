@@ -189,19 +189,66 @@
                 <section id="shelterPage" class="content-page hidden">
     <div class="mb-6 overflow-x-auto no-scrollbar flex gap-2 pb-2">
         <button onclick="filterShelter('all')" class="shelter-filter-btn active-shelter-btn whitespace-nowrap px-4 py-2 rounded-2xl text-[11px] font-bold shadow-sm transition-all" data-center="all">ทั้งหมด</button>
-        <button onclick="filterShelter('ศูนย์เทศบาลฯ')" class="shelter-filter-btn bg-white whitespace-nowrap px-4 py-2 rounded-2xl text-[11px] font-bold shadow-sm transition-all" data-center="ศูนย์เทศบาลฯ">ศูนย์เทศบาลฯ</button>
-        <button onclick="filterShelter('ศูนย์มัสยิดตันหยงมัส')" class="shelter-filter-btn bg-white whitespace-nowrap px-4 py-2 rounded-2xl text-[11px] font-bold shadow-sm transition-all" data-center="ศูนย์มัสยิดตันหยงมัส">มัสยิดตันหยงมัส</button>
-        <button onclick="filterShelter('ศูนย์โรงเรียนเขาพระ')" class="shelter-filter-btn bg-white whitespace-nowrap px-4 py-2 rounded-2xl text-[11px] font-bold shadow-sm transition-all" data-center="ศูนย์โรงเรียนเขาพระ">รร.เขาพระ</button>
+        <button onclick="filterShelter('ศูนย์เทศบาลฯ')" class="shelter-filter-btn bg-white whitespace-nowrap px-4 py-2 rounded-2xl text-[11px] font-bold shadow-sm transition-all" data-center="ศูนย์เทศบาลฯ">ศูนย์เทศบาลตำบลตันหยงมัส</button>
+        <button onclick="filterShelter('ศูนย์มัสยิดตันหยงมัส')" class="shelter-filter-btn bg-white whitespace-nowrap px-4 py-2 rounded-2xl text-[11px] font-bold shadow-sm transition-all" data-center="ศูนย์มัสยิดตันหยงมัส">ศูนย์มัสยิดตันหยงมัส</button>
+        <button onclick="filterShelter('ศูนย์โรงเรียนเขาพระ')" class="shelter-filter-btn bg-white whitespace-nowrap px-4 py-2 rounded-2xl text-[11px] font-bold shadow-sm transition-all" data-center="ศูนย์โรงเรียนเขาพระ">ศูนย์โรงเรียนเขาพระ</button>
     </div>
 
-    <div class="bg-white p-5 rounded-3xl shadow-sm border border-blue-50 mb-6">
-        <div class="flex flex-col md:flex-row items-center gap-6">
-            <div class="w-full md:w-1/2 h-[200px] flex justify-center">
-                <canvas id="shelterPieChart"></canvas>
-            </div>
-            <div id="shelterStats" class="grid grid-cols-2 w-full md:w-1/2 gap-3 text-center"></div>
+    <div class="grid grid-cols-2 md:grid-cols-12 gap-3 mb-6">
+    
+    <div class="col-span-2 md:col-span-7 bg-white p-5 rounded-[2.5rem] shadow-sm border border-blue-50 relative">
+        <h4 class="text-[10px] font-bold text-blue-900 mb-1 uppercase tracking-tight">จำนวนผู้เข้าพักพิง</h4>
+        <div class="h-[180px] w-full relative">
+            <canvas id="chartCapacity"></canvas>
+            <div id="capacityText" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none translate-y-1">
+                </div>
         </div>
     </div>
+
+    <div class="col-span-2 md:col-span-5 grid grid-rows-2 gap-3">
+    
+    <div class="bg-white rounded-[2rem] shadow-sm border border-blue-100 overflow-hidden flex flex-col">
+        <div class="bg-blue-600 px-5 py-2 flex justify-between items-center">
+            <span class="text-[10px] text-white font-black uppercase tracking-wider">จำนวนผู้เข้าพักพิง</span>
+            <i class="fas fa-users text-white/50 text-xs"></i>
+        </div>
+        <div class="p-5 flex justify-between items-center flex-1">
+            <p id="statTotalPeople" class="text-4xl font-black text-slate-700 leading-none">0</p>
+            <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
+                <i class="fas fa-user-friends"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-[2rem] shadow-sm border border-indigo-100 overflow-hidden flex flex-col">
+        <div class="bg-indigo-600 px-5 py-2 flex justify-between items-center">
+            <span class="text-[10px] text-white font-black uppercase tracking-wider">จำนวนครัวเรือน</span>
+            <i class="fas fa-home text-white/50 text-xs"></i>
+        </div>
+        <div class="p-5 flex justify-between items-center flex-1">
+            <p id="statTotalHouseholds" class="text-4xl font-black text-slate-700 leading-none">0</p>
+            <div class="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
+                <i class="fas fa-house-user"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+    <div class="col-span-1 md:col-span-6 bg-white p-4 rounded-[2rem] shadow-sm border border-blue-50">
+        <h4 class="text-[10px] font-bold text-pink-600 mb-3 uppercase tracking-tight border-l-4 border-pink-500 pl-2">สัดส่วนเพศ</h4>
+        <div class="h-[120px]">
+            <canvas id="chartGender"></canvas>
+        </div>
+    </div>
+
+    <div class="col-span-1 md:col-span-6 bg-white p-4 rounded-[2rem] shadow-sm border border-blue-50">
+        <h4 class="text-[10px] font-bold text-amber-600 mb-3 uppercase tracking-tight border-l-4 border-amber-500 pl-2">ช่วงอายุ</h4>
+        <div class="h-[120px]">
+            <canvas id="chartAge"></canvas>
+        </div>
+    </div>
+</div>
 
    <div class="bg-white rounded-3xl shadow-sm border border-blue-50 overflow-hidden mt-6">
     <div class="p-4 border-b border-blue-50 flex justify-between items-center bg-blue-50/30">
@@ -268,7 +315,7 @@
         <div class="relative">
             <select id="regis_shelter" class="w-full p-3.5 border border-blue-100 bg-blue-50 rounded-2xl outline-none appearance-none focus:ring-2 focus:ring-blue-400 transition-all font-bold text-blue-900" required>
                 <option value="" disabled selected>กรุณาเลือกศูนย์พักพิง</option>
-                <option value="ศูนย์เทศบาลฯ">ศูนย์เทศบาลฯ</option>
+                <option value="ศูนย์เทศบาลฯ">ศูนย์เทศบาลตำบลตันหยงมัส</option>
                 <option value="ศูนย์มัสยิดตันหยงมัส">ศูนย์มัสยิดตันหยงมัส</option>
                 <option value="ศูนย์โรงเรียนเขาพระ">ศูนย์โรงเรียนเขาพระ</option>
             </select>
@@ -619,64 +666,144 @@ function filterShelter(centerName) {
     // เก็บข้อมูลที่กรองไว้เพื่อให้ฟังก์ชัน showDetails อ้างอิง index ได้ถูกต้อง
     store.evacuees_display = filtered;
 
-    renderShelterStats(filtered);
+    renderShelterStats(filtered, 'capacity'); // เริ่มต้นด้วยกราฟความจุเสมอ
     renderEvacueeCards(filtered);
 }
 
-// ฟังก์ชันแสดงสถิติและกราฟ
+
+
+// กำหนดความจุของแต่ละศูนย์
+const SHELTER_CAPACITY = {
+    'ศูนย์เทศบาลฯ': 80,
+    'ศูนย์มัสยิดตันหยงมัส': 80,
+    'ศูนย์โรงเรียนเขาพระ': 60
+};
+
+// ฟังก์ชันหลักในการเรนเดอร์สถิติและกราฟ
+/**
+ * ฟังก์ชันแสดงสถิติและกราฟวงกลมของศูนย์พักพิง
+ * @param {Array} data - ข้อมูลผู้ลี้ภัยที่ผ่านการกรองแล้ว
+ * @param {String} chartType - ประเภทกราฟ ('capacity', 'gender', 'health')
+ */
+// ประกาศตัวแปรเก็บ Instance ของกราฟแยกกัน
+let charts = { capacity: null, gender: null, age: null };
+
 function renderShelterStats(data) {
-    const totalPeople = data.length;
-    // นับจำนวนครัวเรือนจากที่อยู่ (Column C -> Index 2)
+    const total = data.length;
     const households = [...new Set(data.map(r => r[2]))].length;
-    
-    // กรองเพศ (Column G -> Index 6)
     const male = data.filter(r => r[6] === 'ชาย').length;
     const female = data.filter(r => r[6] === 'หญิง').length;
-    
-    // นับจำนวนกลุ่มเปราะบาง (Column I -> Index 8)
-    const patients = data.filter(r => r[8] === 'ใช่').length;
 
-    document.getElementById('shelterCountTag').innerText = `${totalPeople} คน`;
+    const ageGroups = {
+        infant: data.filter(r => r[5] >= 0 && r[5] <= 7).length,
+        child: data.filter(r => r[5] >= 8 && r[5] <= 15).length,
+        adult: data.filter(r => r[5] >= 16 && r[5] <= 59).length,
+        elderly: data.filter(r => r[5] >= 60).length
+    };
+
+    document.getElementById('statTotalPeople').innerText = total;
+    document.getElementById('statTotalHouseholds').innerText = households;
+
+    // --- Logic คำนวณความจุ ---
+    // --- Logic คำนวณความจุและเปอร์เซ็นต์ ---
+    const activeBtn = document.querySelector('.shelter-filter-btn.active-shelter-btn');
+    const filterValue = activeBtn ? activeBtn.getAttribute('data-center') : 'all';
+
+    let totalCapacity = 0;
+    if (filterValue === 'all') {
+        totalCapacity = Object.values(SHELTER_CAPACITY).reduce((a, b) => a + b, 0);
+    } else {
+        totalCapacity = SHELTER_CAPACITY[filterValue] || 0;
+    }
+
+    const occupancyRate = (total / totalCapacity) * 100; // คำนวณเปอร์เซ็นต์การครองเตียง
+    const remaining = Math.max(0, totalCapacity - total);
     
-    const statsHtml = `
-        <div class="bg-blue-50 p-3 rounded-2xl text-center">
-            <p class="text-[9px] text-blue-500 font-bold uppercase">จำนวนคน</p>
-            <p class="text-xl font-black text-blue-700">${totalPeople}</p>
-        </div>
-        <div class="bg-indigo-50 p-3 rounded-2xl text-center">
-            <p class="text-[9px] text-indigo-500 font-bold uppercase">ครัวเรือน</p>
-            <p class="text-xl font-black text-indigo-700">${households}</p>
-        </div>
-        <div class="bg-pink-50 p-3 rounded-2xl text-center">
-            <p class="text-[9px] text-pink-500 font-bold uppercase">ชาย/หญิง</p>
-            <p class="text-sm font-bold text-pink-700">${male}/${female}</p>
-        </div>
-        <div class="bg-red-50 p-3 rounded-2xl text-center">
-            <p class="text-[9px] text-red-500 font-bold uppercase">กลุ่มเปราะบาง</p>
-            <p class="text-xl font-black text-red-700">${patients}</p>
-        </div>
+    // --- เงื่อนไขการกำหนดสีตามเปอร์เซ็นต์ ---
+    let capacityColor = '#22c55e'; // Default: สีเขียว (Success)
+    let textColorClass = 'text-green-600';
+
+    if (occupancyRate >= 90) {
+        capacityColor = '#ef4444'; // มากกว่า 90%: สีแดง (Danger)
+        textColorClass = 'text-red-600';
+    } else if (occupancyRate >= 50) {
+        capacityColor = '#f59e0b'; // มากกว่า 50%: สีเหลือง (Warning)
+        textColorClass = 'text-amber-500';
+    }
+
+    // จัดข้อความตรงกลางกราฟ (ปรับสีตามเงื่อนไข)
+    document.getElementById('capacityText').innerHTML = `
+        <span class="text-3xl font-black ${textColorClass} leading-none">${total}</span>
+        <span class="text-[10px] text-slate-400 font-bold uppercase mt-1">/ ${totalCapacity}</span>
     `;
-    document.getElementById('shelterStats').innerHTML = statsHtml;
 
-    // อัปเดตกราฟ
-    const ctx = document.getElementById('shelterPieChart').getContext('2d');
-    if (shelterPieInstance) shelterPieInstance.destroy();
-    shelterPieInstance = new Chart(ctx, {
+    // 1. กราฟความจุ (ส่งค่า capacityColor ที่คำนวณได้ไปใช้)
+    updateChart('capacity', 'chartCapacity', 
+        ['ผู้พักพิง', 'ที่ว่าง'], [total, remaining], [capacityColor, '#f1f5f9'], '80%', false);
+
+    // 2. กราฟเพศ
+    updateChart('gender', 'chartGender', 
+        ['ชาย', 'หญิง'], [male, female], ['#38bdf8', '#f472b6'], '60%', 'right');
+
+    // 3. กราฟอายุ
+    updateChart('age', 'chartAge', 
+        ['เด็กเล็ก 0-7', 'เด็ก 8-15', 'ผู้ใหญ่ 16-59', 'ผู้สูงอายุ 60+'], 
+        [ageGroups.infant, ageGroups.child, ageGroups.adult, ageGroups.elderly], 
+        ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'], '60%', 'right');
+}
+
+// ฟังก์ชันสร้างกราฟที่ปรับปรุงแล้ว
+function updateChart(key, canvasId, labels, data, colors, cutout, legendPos) {
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    if (charts[key]) charts[key].destroy();
+    
+    charts[key] = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: ['ชาย', 'หญิง'],
+            labels: labels,
             datasets: [{
-                data: [male, female],
-                backgroundColor: ['#38bdf8', '#f472b6'],
-                borderWidth: 0
+                data: data,
+                backgroundColor: colors,
+                borderWidth: 0,
+                borderRadius: 4
             }]
         },
         options: {
             maintainAspectRatio: false,
-            cutout: '70%',
-            plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } }
+            cutout: cutout,
+            plugins: {
+                legend: { 
+                    display: legendPos !== false, // ถ้าส่ง false มาจะซ่อน Legend
+                    position: legendPos || 'bottom', 
+                    labels: { 
+                        boxWidth: 8, 
+                        usePointStyle: true,
+                        font: { size: 9, family: 'Kanit' },
+                        padding: 10
+                    } 
+                },
+                tooltip: { enabled: true }
+            }
         }
     });
+}
+
+/**
+ * ฟังก์ชันเสริมสำหรับ Update กราฟเมื่อคลิกที่การ์ด
+ */
+function updateShelterChart(type) {
+    if (!currentShelterData || currentShelterData.length === 0) return;
+    renderShelterStats(currentShelterData, type);
+}
+
+// ฟังก์ชันสำหรับเรียกอัปเดตกราฟจาก Card ที่คลิก
+function updateShelterChart(type) {
+    // ตรวจสอบว่ามีข้อมูลให้แสดงกราฟหรือไม่
+    if (currentShelterData.length === 0) {
+        Swal.fire('ไม่มีข้อมูล', 'ไม่สามารถสร้างกราฟได้เนื่องจากไม่มีข้อมูลผู้เข้าพักพิง', 'info');
+        return;
+    }
+    renderShelterStats(currentShelterData, type);
 }
 
 // ฟังก์ชันแสดงการ์ดรายชื่อ
