@@ -48,6 +48,14 @@
             .bottom-nav-mobile { display: none !important; }
             .content-area { padding-bottom: 20px; }
         }
+
+        .shelter-filter-btn.active-shelter-btn {
+        background-color: #2563eb !important;
+        color: white !important;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
     </style>
 </head>
 <body class="text-slate-700">
@@ -132,7 +140,7 @@
                             </div>
                             <div class="flex gap-1 bg-slate-100 p-1 rounded-xl w-full md:w-auto">
                                 <button onclick="setDateFilter('today')" class="flex-1 px-3 py-1.5 text-[10px] font-bold rounded-lg hover:bg-white transition">วันนี้</button>
-                                <button onclick="setDateFilter('yesterday')" class="flex-1 px-3 py-1.5 text-[8px] font-bold rounded-lg hover:bg-white transition">เมื่อวาน</button>
+                                <button onclick="setDateFilter('yesterday')" class="flex-1 px-3 py-1.5 text-[10px] font-bold rounded-lg hover:bg-white transition">เมื่อวาน</button>
                                 <button onclick="setDateFilter('week')" class="flex-1 px-3 py-1.5 text-[10px] font-bold rounded-lg hover:bg-white transition">7 วัน</button>
                             </div>
                         </div>
@@ -178,8 +186,160 @@
                     </div>
                 </section>
 
-                <section id="shelterPage" class="content-page hidden"><div class="bg-white p-10 rounded-3xl text-center text-slate-400">ระบบศูนย์พักพิง</div></section>
-                <section id="regisPage" class="content-page hidden"><div class="bg-white p-10 rounded-3xl text-center text-slate-400">ลงทะเบียนอพยพ</div></section>
+                <section id="shelterPage" class="content-page hidden">
+    <div class="mb-6 overflow-x-auto no-scrollbar flex gap-2 pb-2">
+        <button onclick="filterShelter('all')" class="shelter-filter-btn active-shelter-btn whitespace-nowrap px-4 py-2 rounded-2xl text-[11px] font-bold shadow-sm transition-all" data-center="all">ทั้งหมด</button>
+        <button onclick="filterShelter('ศูนย์เทศบาลฯ')" class="shelter-filter-btn bg-white whitespace-nowrap px-4 py-2 rounded-2xl text-[11px] font-bold shadow-sm transition-all" data-center="ศูนย์เทศบาลฯ">ศูนย์เทศบาลฯ</button>
+        <button onclick="filterShelter('ศูนย์มัสยิดตันหยงมัส')" class="shelter-filter-btn bg-white whitespace-nowrap px-4 py-2 rounded-2xl text-[11px] font-bold shadow-sm transition-all" data-center="ศูนย์มัสยิดตันหยงมัส">มัสยิดตันหยงมัส</button>
+        <button onclick="filterShelter('ศูนย์โรงเรียนเขาพระ')" class="shelter-filter-btn bg-white whitespace-nowrap px-4 py-2 rounded-2xl text-[11px] font-bold shadow-sm transition-all" data-center="ศูนย์โรงเรียนเขาพระ">รร.เขาพระ</button>
+    </div>
+
+    <div class="bg-white p-5 rounded-3xl shadow-sm border border-blue-50 mb-6">
+        <div class="flex flex-col md:flex-row items-center gap-6">
+            <div class="w-full md:w-1/2 h-[200px] flex justify-center">
+                <canvas id="shelterPieChart"></canvas>
+            </div>
+            <div id="shelterStats" class="grid grid-cols-2 w-full md:w-1/2 gap-3 text-center"></div>
+        </div>
+    </div>
+
+   <div class="bg-white rounded-3xl shadow-sm border border-blue-50 overflow-hidden mt-6">
+    <div class="p-4 border-b border-blue-50 flex justify-between items-center bg-blue-50/30">
+        <h3 class="font-bold text-blue-900 text-sm italic">รายชื่อผู้เข้าพักพิง</h3>
+        <span id="shelterCountTag" class="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-bold">0 คน</span>
+    </div>
+    
+    <div class="overflow-x-auto max-h-[550px] overflow-y-auto">
+        <table class="w-full text-left border-collapse min-w-[600px]">
+            <thead class="bg-slate-50 sticky top-0 z-10 shadow-sm">
+                <tr class="text-[10px] text-slate-500 uppercase font-bold border-b border-blue-50">
+                    <th class="p-3 text-center">#</th>
+                    <th class="p-3">ชื่อ-นามสกุล</th>
+                    <th class="p-3">อายุ/เพศ</th>
+                    <th class="p-3">สถานะสุขภาพ</th>
+                    <th class="p-3">ศูนย์พักพิง</th>
+                    <th class="p-3 text-center">จัดการ</th>
+                </tr>
+            </thead>
+            <tbody id="evacueeTableBody" class="text-[11px]"></tbody>
+        </table>
+    </div>
+</div>
+
+<div id="dataModal" class="hidden fixed inset-0 bg-slate-900/60 z-[100] flex items-center justify-center p-4 backdrop-blur-md">
+    <div class="bg-white w-full max-w-sm rounded-[2.5rem] overflow-hidden shadow-2xl transition-all scale-in-center">
+        <div class="bg-gradient-to-br from-blue-600 to-blue-800 p-6 text-center relative">
+            <button onclick="closeDataModal()" class="absolute top-4 right-4 text-white/50 hover:text-white transition-colors">
+                <i class="fas fa-times-circle text-2xl"></i>
+            </button>
+            
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-3 backdrop-blur-sm">
+                <i class="fas fa-user text-3xl text-white"></i>
+            </div>
+            <h3 id="modalName" class="text-xl font-black text-white mb-1">ชื่อ-นามสกุล</h3>
+            <span id="modalShelter" class="inline-block bg-amber-400 text-amber-950 px-4 py-1 rounded-full text-[11px] font-black uppercase tracking-wider shadow-lg">
+                ศูนย์เทศบาลฯ
+            </span>
+        </div>
+
+        <div id="modalContent" class="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
+            </div>
+
+        <div class="p-4 bg-slate-50">
+            <button onclick="closeDataModal()" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-600 py-3.5 rounded-2xl font-bold transition-all">
+                ปิดหน้าต่างข้อมูล
+            </button>
+        </div>
+    </div>
+</div>
+</section>
+                <section id="regisPage" class="content-page hidden">
+    <div class="bg-white p-6 md:p-10 rounded-3xl shadow-lg border border-blue-50 max-w-xl mx-auto">
+        <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <h3 class="text-lg font-bold text-blue-900 tracking-tight">ลงทะเบียนผู้ประสบภัยอพยพ</h3>
+        </div>
+
+        <form id="regisForm" onsubmit="saveEvacuee(event)" class="space-y-4">
+    <div>
+        <label class="text-xs font-bold text-slate-500 ml-1">เข้าพักที่ศูนย์พักพิง</label>
+        <div class="relative">
+            <select id="regis_shelter" class="w-full p-3.5 border border-blue-100 bg-blue-50 rounded-2xl outline-none appearance-none focus:ring-2 focus:ring-blue-400 transition-all font-bold text-blue-900" required>
+                <option value="" disabled selected>กรุณาเลือกศูนย์พักพิง</option>
+                <option value="ศูนย์เทศบาลฯ">ศูนย์เทศบาลฯ</option>
+                <option value="ศูนย์มัสยิดตันหยงมัส">ศูนย์มัสยิดตันหยงมัส</option>
+                <option value="ศูนย์โรงเรียนเขาพระ">ศูนย์โรงเรียนเขาพระ</option>
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-blue-400">
+                <i class="fas fa-chevron-down text-xs"></i>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <label class="text-xs font-bold text-slate-500 ml-1">ชื่อ-นามสกุล</label>
+        <input type="text" id="regis_name" class="w-full p-3.5 border border-blue-100 bg-blue-50 rounded-2xl outline-none focus:ring-2 focus:ring-blue-400 transition-all" placeholder="ระบุชื่อ และนามสกุล" required>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
+        <div>
+            <label class="text-xs font-bold text-slate-500 ml-1">อายุ (ปี)</label>
+            <input type="number" id="regis_age" class="w-full p-3.5 border border-blue-100 bg-blue-50 rounded-2xl outline-none focus:ring-2 focus:ring-blue-400" placeholder="ตัวเลข" required>
+        </div>
+        <div>
+            <label class="text-xs font-bold text-slate-500 ml-1">เพศ</label>
+            <select id="regis_gender" class="w-full p-3.5 border border-blue-100 bg-blue-50 rounded-2xl outline-none focus:ring-2 focus:ring-blue-400" required>
+                <option value="ชาย">ชาย</option>
+                <option value="หญิง">หญิง</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+            <label class="text-xs font-bold text-slate-500 ml-1">เลขบัตรประจำตัวประชาชน</label>
+            <input type="text" id="regis_idcard" class="w-full p-3.5 border border-blue-100 bg-blue-50 rounded-2xl outline-none" placeholder="13 หลัก" maxlength="13">
+        </div>
+        <div>
+            <label class="text-xs font-bold text-slate-500 ml-1">เบอร์โทรศัพท์</label>
+            <input type="tel" id="regis_phone" class="w-full p-3.5 border border-blue-100 bg-blue-50 rounded-2xl outline-none" placeholder="08XXXXXXXX">
+        </div>
+    </div>
+
+    <div>
+        <label class="text-xs font-bold text-slate-500 ml-1">ที่อยู่เดิม/ชุมชน</label>
+        <select id="regis_address_select" onchange="toggleOtherAddress(this.value)" class="w-full p-3.5 border border-blue-100 bg-blue-50 rounded-2xl outline-none focus:ring-2 focus:ring-blue-400 transition-all" required>
+            </select>
+    </div>
+
+    <div id="other_address_container" class="hidden animate-fade-in">
+        <label class="text-xs font-bold text-blue-600 ml-1 italic">ระบุที่อยู่เพิ่มเติม (บ้านเลขที่/ซอย/หมู่ที่)</label>
+        <textarea id="regis_address_custom" class="w-full p-3.5 border-2 border-blue-100 bg-white rounded-2xl outline-none focus:border-blue-400 h-20 shadow-inner" placeholder="ระบุที่อยู่ที่ต้องการลงทะเบียน..."></textarea>
+    </div>
+
+    <div class="bg-amber-50 p-4 rounded-[2rem] border border-amber-100 space-y-3 shadow-sm">
+        <div class="flex items-center gap-2 px-1">
+            <input type="checkbox" id="regis_is_patient" class="w-5 h-5 rounded-lg text-amber-600 cursor-pointer transition-all" onchange="toggleHealthNote(this.checked)">
+            <label for="regis_is_patient" class="text-sm font-bold text-amber-800 cursor-pointer select-none">เป็นผู้ป่วย / ผู้พิการ / กลุ่มเปราะบาง</label>
+        </div>
+        
+        <div id="health_note_container" class="hidden space-y-2">
+            <p class="text-[10px] font-bold text-amber-600 ml-1 uppercase tracking-tighter">โปรดระบุโรคประจำตัว หรือ อาการที่ต้องการความช่วยเหลือพิเศษ</p>
+            <textarea id="regis_health_note" class="w-full p-3.5 border border-amber-200 bg-white rounded-2xl outline-none focus:ring-2 focus:ring-amber-400 h-24 text-sm shadow-inner" placeholder="ตัวอย่าง: ผู้ป่วยติดเตียง, พิการทางการเคลื่อนไหว, โรคเบาหวาน..."></textarea>
+        </div>
+    </div>
+
+    <div class="pt-4">
+        <button type="submit" id="saveRegisBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-[1.5rem] font-black text-lg shadow-xl shadow-blue-200 transition-all active:scale-95 flex items-center justify-center gap-2">
+            <i class="fas fa-check-circle"></i>
+            ยืนยันการลงทะเบียน
+        </button>
+        <p class="text-center text-[10px] text-slate-400 mt-3 italic">* ตรวจสอบความถูกต้องของข้อมูลก่อนกดยืนยัน</p>
+    </div>
+</form>
+</section>
                 <section id="lookerPage" class="content-page hidden"><iframe src="" id="lookerFrame" class="w-full h-[70vh] md:h-[80vh] rounded-3xl border-0 shadow-sm bg-white"></iframe></section>
 
             </div>
@@ -249,21 +409,51 @@
         }
 
         async function loadData() {
-            try {
-                const res = await fetch(API_URL, { method:'POST', body: JSON.stringify({action:'getInitialData'}) });
-                store = await res.json();
-                const pOpts = store.waterPoints.map(v => `<option value="${v}">${v}</option>`).join('');
-                document.getElementById('water_loc').innerHTML = pOpts;
-                const activeAreas = [...new Set(store.waterLevels.map(r => r[1]))].sort();
-                const activeOpts = activeAreas.map(v => `<option value="${v}">${v}</option>`).join('');
-                const filterHtml = '<option value="all">ทุกพื้นที่ (ที่มีข้อมูล)</option>' + activeOpts;
-                document.getElementById('chartLocFilter').innerHTML = filterHtml;
-                document.getElementById('cardLocFilter').innerHTML = filterHtml;
-                document.getElementById('lastUpdate').innerText = new Date().toLocaleTimeString('th-TH') + " น.";
-                setDateFilter('week');
-                renderWaterCards();
-            } catch(e) { console.error("Load Data Error", e); }
+    try {
+        const res = await fetch(API_URL, { 
+            method: 'POST', 
+            body: JSON.stringify({ action: 'getInitialData' }) 
+        });
+        store = await res.json();
+        
+        // 1. จัดการ Dropdown สำหรับรายงานน้ำ
+        if (store.waterPoints) {
+            const pOpts = store.waterPoints.map(v => `<option value="${v}">${v}</option>`).join('');
+            document.getElementById('water_loc').innerHTML = pOpts;
+            
+            // กรองเฉพาะพื้นที่ที่มีข้อมูลรายงานน้ำแล้วมาทำเป็น Filter
+            const activeWaterAreas = [...new Set(store.waterLevels.map(r => r[1]))].sort();
+            const filterHtml = '<option value="all">ทุกพื้นที่ (ที่มีข้อมูล)</option>' + 
+                             activeWaterAreas.map(v => `<option value="${v}">${v}</option>`).join('');
+            document.getElementById('chartLocFilter').innerHTML = filterHtml;
+            document.getElementById('cardLocFilter').innerHTML = filterHtml;
         }
+
+        // 2. จัดการ Dropdown ที่อยู่ในหน้าลงทะเบียนใหม่
+        if (store.addresses) {
+            const addrOpts = '<option value="" disabled selected>เลือกที่อยู่/ชุมชน</option>' + 
+                            store.addresses.map(a => `<option value="${a}">${a}</option>`).join('') +
+                            '<option value="other">อื่น ๆ (ระบุเอง)</option>';
+            document.getElementById('regis_address_select').innerHTML = addrOpts;
+        }
+
+        // 3. ประมวลผลหน้าสถานการณ์น้ำ (กราฟ + การ์ด)
+        setDateFilter('week');
+        renderWaterCards();
+
+        // 4. ประมวลผลหน้าศูนย์พักพิง (สถิติ + กราฟวงกลม + รายชื่อ)
+        if (store.evacuees) {
+            filterShelter('all'); 
+        }
+
+        // อัปเดตเวลาล่าสุด
+        document.getElementById('lastUpdate').innerText = new Date().toLocaleTimeString('th-TH') + " น.";
+        
+    } catch(e) { 
+        console.error("Load Data Error", e); 
+        Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
+    }
+}
 
         function setDateFilter(type) {
             const end = new Date(); let start = new Date();
@@ -407,6 +597,330 @@
                 } else { throw new Error(data.error); }
             } catch(err) { Swal.fire('ผิดพลาด', err.message, 'error'); } finally { btn.disabled = false; }
         }
+        let shelterPieInstance = null;
+
+// ฟังก์ชันสำหรับกรองข้อมูลศูนย์พักพิง
+function filterShelter(centerName) {
+    // ปรับสถานะปุ่ม
+    document.querySelectorAll('.shelter-filter-btn').forEach(btn => {
+        btn.classList.remove('active-shelter-btn', 'bg-white');
+        if(btn.getAttribute('data-center') === centerName) btn.classList.add('active-menu-mobile', 'active-shelter-btn');
+        else btn.classList.add('bg-white');
+    });
+
+    const evacuees = store.evacuees;
+    let filtered = centerName === 'all' ? evacuees : evacuees.filter(r => r[1] === centerName);
+    
+    // เก็บข้อมูลที่กรองไว้เพื่อให้ฟังก์ชัน showDetails อ้างอิง index ได้ถูกต้อง
+    store.evacuees_display = filtered;
+
+    renderShelterStats(filtered);
+    renderEvacueeCards(filtered);
+}
+
+// ฟังก์ชันแสดงสถิติและกราฟ
+function renderShelterStats(data) {
+    const totalPeople = data.length;
+    // นับจำนวนครัวเรือนจากที่อยู่ (Column C -> Index 2)
+    const households = [...new Set(data.map(r => r[2]))].length;
+    
+    // กรองเพศ (Column G -> Index 6)
+    const male = data.filter(r => r[6] === 'ชาย').length;
+    const female = data.filter(r => r[6] === 'หญิง').length;
+    
+    // นับจำนวนกลุ่มเปราะบาง (Column I -> Index 8)
+    const patients = data.filter(r => r[8] === 'ใช่').length;
+
+    document.getElementById('shelterCountTag').innerText = `${totalPeople} คน`;
+    
+    const statsHtml = `
+        <div class="bg-blue-50 p-3 rounded-2xl text-center">
+            <p class="text-[9px] text-blue-500 font-bold uppercase">จำนวนคน</p>
+            <p class="text-xl font-black text-blue-700">${totalPeople}</p>
+        </div>
+        <div class="bg-indigo-50 p-3 rounded-2xl text-center">
+            <p class="text-[9px] text-indigo-500 font-bold uppercase">ครัวเรือน</p>
+            <p class="text-xl font-black text-indigo-700">${households}</p>
+        </div>
+        <div class="bg-pink-50 p-3 rounded-2xl text-center">
+            <p class="text-[9px] text-pink-500 font-bold uppercase">ชาย/หญิง</p>
+            <p class="text-sm font-bold text-pink-700">${male}/${female}</p>
+        </div>
+        <div class="bg-red-50 p-3 rounded-2xl text-center">
+            <p class="text-[9px] text-red-500 font-bold uppercase">กลุ่มเปราะบาง</p>
+            <p class="text-xl font-black text-red-700">${patients}</p>
+        </div>
+    `;
+    document.getElementById('shelterStats').innerHTML = statsHtml;
+
+    // อัปเดตกราฟ
+    const ctx = document.getElementById('shelterPieChart').getContext('2d');
+    if (shelterPieInstance) shelterPieInstance.destroy();
+    shelterPieInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['ชาย', 'หญิง'],
+            datasets: [{
+                data: [male, female],
+                backgroundColor: ['#38bdf8', '#f472b6'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } }
+        }
+    });
+}
+
+// ฟังก์ชันแสดงการ์ดรายชื่อ
+/**
+ * ฟังก์ชันแสดงตารางรายชื่อผู้เข้าพักพิง
+ * รองรับโครงสร้างข้อมูล A-J (10 คอลัมน์)
+ */
+// ฟังก์ชันแสดงตาราง
+/**
+ * ฟังก์ชันสำหรับแสดงรายชื่อผู้เข้าพักพิงในรูปแบบตาราง
+ * รองรับการคัดกรองข้อมูล และระบบตรวจสอบรหัสผ่านเพื่อดูรายละเอียด
+ */
+function renderEvacueeCards(data) {
+    const tableBody = document.getElementById('evacueeTableBody');
+    
+    // 1. ตรวจสอบว่ามีข้อมูลหรือไม่
+    if (!data || data.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center py-10 text-slate-400 italic">
+                    <i class="fas fa-user-slash mb-2 text-2xl block"></i>
+                    ไม่พบข้อมูลผู้เข้าพักพิง
+                </td>
+            </tr>`;
+        return;
+    }
+
+    // 2. สร้างแถวตารางจากข้อมูล
+    tableBody.innerHTML = data.map((r, index) => {
+        // อ้างอิง Index ตามโครงสร้าง A-J
+        // r[1]=ศูนย์, r[4]=ชื่อ, r[5]=อายุ, r[6]=เพศ, r[8]=ป่วย/พิการ
+        
+        const isPatient = r[8] === 'ใช่';
+        const gender = r[6] || 'ไม่ระบุ';
+        const age = r[5] || '-';
+        const name = r[4] || 'ไม่มีชื่อ';
+        const shelter = r[1] || '-';
+
+        return `
+        <tr class="border-b border-slate-50 hover:bg-blue-50/50 transition-colors">
+            <td class="p-3 text-center text-slate-400 font-bold">${index + 1}</td>
+            <td class="p-3">
+                <div class="font-bold text-slate-700 text-[12px]">${name}</div>
+            </td>
+            <td class="p-3 text-slate-500">
+                ${age} ปี / ${gender}
+            </td>
+            <td class="p-3">
+                ${isPatient 
+                    ? '<span class="text-red-500 font-bold underline decoration-dotted text-[10px]"><i class="fas fa-exclamation-triangle mr-1"></i>ผู้ป่วย/พิการ</span>' 
+                    : '<span class="text-slate-400 text-[10px]">ปกติ</span>'}
+            </td>
+            <td class="p-3">
+                <span class="bg-blue-50 text-blue-600 px-2 py-0.5 rounded-lg font-bold text-[10px]">
+                    ${shelter}
+                </span>
+            </td>
+            <td class="p-3 text-center">
+                <button onclick="checkPasswordBeforeDetail(${index})" 
+                        class="bg-white border border-blue-200 text-blue-600 w-8 h-8 rounded-full shadow-sm hover:bg-blue-600 hover:text-white transition-all active:scale-90">
+                    <i class="fas fa-search-plus text-xs"></i>
+                </button>
+            </td>
+        </tr>
+        `;
+    }).join('');
+
+    // 3. อัปเดตตัวเลขแสดงจำนวนรวมที่มุมตาราง
+    if (document.getElementById('shelterCountTag')) {
+        document.getElementById('shelterCountTag').innerText = `${data.length} คน`;
+    }
+}
+// 1. ฟังก์ชันตรวจสอบรหัสผ่าน 1111
+async function checkPasswordBeforeDetail(index) {
+    const { value: password } = await Swal.fire({
+        title: 'ระบบรักษาความปลอดภัย',
+        text: 'กรุณาระบุรหัสผ่านเพื่อดูข้อมูลส่วนตัว',
+        input: 'password',
+        inputPlaceholder: 'รหัสผ่าน 4 หลัก',
+        confirmButtonText: 'ยืนยัน',
+        confirmButtonColor: '#2563eb',
+        showCancelButton: true,
+        cancelButtonText: 'ยกเลิก'
+    });
+
+    if (password === '1111') {
+        showDetails(index);
+    } else if (password) {
+        Swal.fire('รหัสผ่านไม่ถูกต้อง', 'คุณไม่ได้รับอนุญาตให้ดูข้อมูลนี้', 'error');
+    }
+}
+
+// ฟังก์ชันปิด Modal (แก้ไขให้ทำงานได้แน่นอน)
+function closeDataModal() {
+    const modal = document.getElementById('dataModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+// ฟังก์ชันแสดงรายละเอียดข้อมูล
+function showDetails(index) {
+    const person = store.evacuees_display[index]; 
+    if (!person) return;
+
+    // แสดงชื่อและศูนย์ในส่วน Header ให้เด่น
+    document.getElementById('modalName').innerText = person[4]; // ชื่อ (Index 4)
+    document.getElementById('modalShelter').innerText = person[1]; // ศูนย์ (Index 1)
+
+    const modal = document.getElementById('dataModal');
+    const content = document.getElementById('modalContent');
+
+    const gender = person[6] || 'ไม่ระบุ';
+    const isPatient = person[8] === 'ใช่';
+
+    content.innerHTML = `
+        <div class="grid grid-cols-2 gap-4">
+            <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">อายุ</p>
+                <p class="text-sm font-black text-slate-700">${person[5]} ปี</p>
+            </div>
+            <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">เพศ</p>
+                <p class="text-sm font-black text-slate-700">${gender}</p>
+            </div>
+        </div>
+
+        <div class="space-y-3">
+            <div class="flex items-center gap-3 px-1">
+                <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500">
+                    <i class="fas fa-id-card"></i>
+                </div>
+                <div>
+                    <p class="text-[9px] text-slate-400 font-bold">เลขบัตรประชาชน</p>
+                    <p class="text-sm font-bold text-slate-700">${person[3] || '-'}</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 px-1">
+                <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center text-green-500">
+                    <i class="fas fa-phone-alt"></i>
+                </div>
+                <div>
+                    <p class="text-[9px] text-slate-400 font-bold">เบอร์โทรศัพท์</p>
+                    <a href="tel:${person[7]}" class="text-sm font-bold text-blue-600 underline">${person[7] || 'ไม่ระบุ'}</a>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 px-1">
+                <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500">
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <div>
+                    <p class="text-[9px] text-slate-400 font-bold">ที่อยู่เดิม</p>
+                    <p class="text-xs font-medium text-slate-600">${person[2]}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4 p-4 rounded-3xl ${isPatient ? 'bg-red-50 border-2 border-red-100' : 'bg-slate-50 border border-slate-100'}">
+            <p class="text-[10px] font-bold ${isPatient ? 'text-red-500' : 'text-slate-400'} uppercase mb-1">สถานะสุขภาพ</p>
+            <p class="text-md font-black ${isPatient ? 'text-red-700' : 'text-slate-700'}">
+                ${isPatient ? '<i class="fas fa-notes-medical mr-2"></i>ผู้ป่วย / ผู้พิการ' : '<i class="fas fa-check-circle mr-2 text-green-500"></i>สุขภาพปกติ'}
+            </p>
+            ${isPatient && person[9] ? `<div class="mt-2 text-xs text-red-600 bg-white p-2.5 rounded-xl italic shadow-sm">${person[9]}</div>` : ''}
+        </div>
+    `;
+    
+    modal.classList.remove('hidden');
+}
+
+async function saveEvacuee(e) {
+    e.preventDefault(); // ป้องกันหน้าเว็บ Refresh
+    
+    const btn = document.getElementById('saveRegisBtn');
+    const originalText = btn.innerText; // เก็บข้อความเดิมไว้ (เช่น "ส่งรายงานน้ำ")
+
+    // 1. ตรวจสอบข้อมูลเบื้องต้น
+    const shelter = document.getElementById('regis_shelter').value;
+    const addrSelect = document.getElementById('regis_address_select').value;
+    const addrCustom = document.getElementById('regis_address_custom').value;
+    const finalAddress = (addrSelect === 'other') ? addrCustom : addrSelect;
+
+    if (!shelter || !finalAddress) {
+        return Swal.fire('ข้อมูลไม่ครบ', 'กรุณาระบุศูนย์พักพิงและที่อยู่', 'warning');
+    }
+
+    // 2. เริ่มสถานะบันทึก (ล็อกปุ่ม)
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>กำลังบันทึก...';
+
+    Swal.fire({
+        title: 'กำลังบันทึกข้อมูล...',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+    });
+
+    try {
+        const payload = {
+            action: 'saveEvacuee',
+            shelter: shelter,
+            address: finalAddress,
+            idCard: document.getElementById('regis_idcard').value.trim(),
+            name: document.getElementById('regis_name').value.trim(),
+            age: document.getElementById('regis_age').value,
+            gender: document.getElementById('regis_gender').value,
+            phone: document.getElementById('regis_phone').value.trim(),
+            isPatient: document.getElementById('regis_is_patient').checked ? "ใช่" : "ไม่ใช่",
+            healthNote: document.getElementById('regis_health_note').value.trim()
+        };
+
+        const res = await fetch(API_URL, { 
+            method: 'POST', 
+            body: JSON.stringify(payload) 
+        });
+        
+        if (!res.ok) throw new Error("การเชื่อมต่อ Server ล้มเหลว");
+        
+        const result = await res.json();
+
+        if (result.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'ลงทะเบียนสำเร็จ',
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => {
+                // --- จุดที่แก้ไขให้ปุ่มและการแสดงผลกลับมาถูกต้อง ---
+                document.getElementById('regisForm').reset(); // ล้างข้อมูลในฟอร์ม
+                document.getElementById('health_note_container').classList.add('hidden'); // ซ่อนช่องโรคประจำตัว
+                if(document.getElementById('other_address_container')) {
+                    document.getElementById('other_address_container').classList.add('hidden'); // ซ่อนช่องระบุที่อยู่เอง
+                }
+                
+                loadData(); // อัปเดตข้อมูลใน store (จะเรียก filterShelter ให้อัตโนมัติ)
+                showPage('shelter'); // เด้งไปหน้าตารางศูนย์พักพิง
+            });
+        } else {
+            throw new Error(result.error || "เกิดข้อผิดพลาดในการบันทึก");
+        }
+    } catch (err) {
+        console.error(err);
+        Swal.fire('บันทึกล้มเหลว', err.message, 'error');
+    } finally {
+        // 3. ปลดล็อกปุ่มให้กลับมาใช้งานได้เสมอ (ไม่ว่าจะสำเร็จหรือ Error)
+        btn.disabled = false;
+        btn.innerText = originalText;
+    }
+}
     </script>
 </body>
 </html>
