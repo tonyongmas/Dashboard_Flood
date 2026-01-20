@@ -68,6 +68,18 @@
     .active-trend[onclick*="คงตัว"] { border-color: #eab308 !important; }
     .active-trend[onclick*="ลดลง"] { border-color: #22c55e !important; }
 
+    /* ปรับแต่งความสูงให้แสดงผลประมาณ 15 คน (ประมาณ 650px) */
+    .no-scrollbar-style::-webkit-scrollbar {
+        width: 4px;
+    }
+    .no-scrollbar-style::-webkit-scrollbar-track {
+        background: #f8fafc;
+    }
+    .no-scrollbar-style::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+    }
+</style>
     </style>
 </head>
 <body class="text-slate-700">
@@ -95,6 +107,7 @@
                 <button onclick="showPage('addWater')" class="nav-btn w-full text-left px-6 py-4 flex items-center text-sm text-slate-500 hover:bg-blue-50" data-page="addWater"><i class="fas fa-plus-circle w-6 text-center"></i> <span class="nav-text ml-3">รายงานระดับน้ำ</span></button>
                 <button onclick="showPage('shelter')" class="nav-btn w-full text-left px-6 py-4 flex items-center text-sm text-slate-500 hover:bg-blue-50" data-page="shelter"><i class="fas fa-hotel w-6 text-center"></i> <span class="nav-text ml-3">ศูนย์พักพิง</span></button>
                 <button onclick="showPage('regis')" class="nav-btn w-full text-left px-6 py-4 flex items-center text-sm text-slate-500 hover:bg-blue-50" data-page="regis"><i class="fas fa-user-plus w-6 text-center"></i> <span class="nav-text ml-3">ลงทะเบียนใหม่</span></button>
+                <button onclick="showPage('relief')" class="nav-btn w-full text-left px-6 py-4 flex items-center text-sm text-slate-500 hover:bg-amber-50" data-page="relief"><i class="fa-solid fa-box-archive w-6 text-center"></i> <span class="nav-text ml-3">ข้อมูลผู้รับถุงยังชีพ</span></button>
                 <button onclick="showPage('looker')" class="nav-btn w-full text-left px-6 py-4 flex items-center text-sm text-slate-500 hover:bg-blue-50" data-page="looker"><i class="fas fa-chart-pie w-6 text-center"></i> <span class="nav-text ml-3">รายงานข้อมูลน้ำท่วม</span></button>
             </nav>
 
@@ -109,19 +122,23 @@
         <div class="bottom-nav-mobile hidden fixed bottom-0 left-0 right-0 bg-white border-t border-blue-100 justify-around items-center py-2 px-1 z-50 shadow-[0_-2px_15px_rgba(0,0,0,0.08)]">
             <button onclick="showPage('water')" class="mobile-nav-btn flex flex-col items-center flex-1 text-slate-400 py-1" data-page="water">
                 <i class="fas fa-tint text-xl"></i>
-                <span class="text-[10px] mt-1 font-bold">สถานการณ์ระดับน้ำ</span>
+                <span class="text-[9px] mt-1 font-bold">สถานการณ์ระดับน้ำ</span>
             </button>
             <button onclick="showPage('addWater')" class="mobile-nav-btn flex flex-col items-center flex-1 text-slate-400 py-1" data-page="addWater">
                 <i class="fas fa-plus-circle text-xl"></i>
-                <span class="text-[10px] mt-1 font-bold">รายงานระดับน้ำ</span>
+                <span class="text-[9px] mt-1 font-bold">รายงานระดับน้ำ</span>
             </button>
             <button onclick="showPage('shelter')" class="mobile-nav-btn flex flex-col items-center flex-1 text-slate-400 py-1" data-page="shelter">
                 <i class="fas fa-hotel text-xl"></i>
-                <span class="text-[10px] mt-1 font-bold">ศูนย์พักพิง</span>
+                <span class="text-[9px] mt-1 font-bold">ศูนย์พักพิง</span>
+            </button>
+            <button onclick="showPage('relief')" class="mobile-nav-btn flex flex-col items-center flex-1 text-slate-400 py-1" data-page="relief">
+                <i class="fa-solid fa-box-archive text-xl"></i>
+                <span class="text-[9px] mt-1 font-bold">ถุงยังชีพ</span>
             </button>
             <button onclick="showPage('regis')" class="mobile-nav-btn flex flex-col items-center flex-1 text-slate-400 py-1" data-page="regis">
                 <i class="fas fa-user-plus text-xl"></i>
-                <span class="text-[10px] mt-1 font-bold">ลงทะเบียนศูนย์ฯ</span>
+                <span class="text-[9px] mt-1 font-bold">ลงทะเบียนศูนย์ฯ</span>
             </button>
         </div>
 
@@ -344,6 +361,88 @@
     </div>
 </div>
 </section>
+<section id="reliefPage" class="content-page hidden animate-fade-in">
+    
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+        <div class="flex-shrink-0">
+            <h2 class="text-2xl font-black text-slate-800 tracking-tight">ข้อมูลผู้รับถุงยังชีพ</h2>
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">เทศบาลตำบลตันหยงมัส</p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3 flex-1 lg:max-w-3xl">
+            <div class="relative flex-1 group">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <i class="fas fa-search text-slate-300 group-focus-within:text-amber-500 transition-colors text-sm"></i>
+                </div>
+                <input type="text" id="reliefSearchInput" onkeyup="filterReliefTable()" 
+                    placeholder="ค้นหาชื่อ หรือที่อยู่..." 
+                    class="w-full pl-11 pr-32 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-amber-50 focus:border-amber-400 transition-all shadow-sm text-sm font-medium"
+                >
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <span id="reliefMatchCount" class="text-[8px] font-black text-amber-600 bg-amber-50 px-2 py-1 rounded-lg border border-amber-100">
+                        รอข้อมูล...
+                    </span>
+                </div>
+            </div>
+
+            <button onclick="openReliefModal()" class="bg-amber-500 text-white px-6 py-3.5 rounded-2xl font-black shadow-lg shadow-amber-200 hover:bg-amber-600 transition-all active:scale-95 flex items-center justify-center whitespace-nowrap">
+                <i class="fas fa-plus-circle mr-2"></i>
+                บันทึกการแจก
+            </button>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden transition-all">
+        <div class="overflow-x-auto overflow-y-auto max-h-[650px] custom-scrollbar">
+            <table class="w-full text-left border-collapse min-w-[750px]">
+                <thead class="bg-slate-50 sticky top-0 z-10 shadow-sm">
+                    <tr class="text-[10px] text-slate-500 font-bold uppercase border-b border-slate-100">
+                        <th class="p-5 text-center w-20">ลำดับ</th>
+                        <th class="p-5">วัน-เวลา / ชื่อ-นามสกุลผู้รับ</th>
+                        <th class="p-5">ที่อยู่ปัจจุบัน</th>
+                        <th class="p-5 text-center">จำนวนผู้อาศัย</th>
+                        <th class="p-5 text-center">สถานะผู้รับ</th>
+                    </tr>
+                </thead>
+                <tbody id="reliefTableBody" class="text-xs text-slate-700 divide-y divide-slate-50">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="mt-4 flex justify-between items-center px-4">
+        <p class="text-[10px] text-slate-400 font-medium italic">* แสดงข้อมูลล่าสุดอยู่ด้านบนสุด</p>
+        <div class="flex items-center gap-3">
+            <span class="text-[9px] font-bold text-green-600"><i class="fas fa-check-circle mr-1"></i>เจ้าบ้าน</span>
+            <span class="text-[9px] font-bold text-amber-600"><i class="fas fa-exclamation-circle mr-1"></i>ผู้อาศัย</span>
+        </div>
+    </div>
+</section>
+    <div id="reliefModal" class="hidden fixed inset-0 bg-slate-900/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-lg rounded-[2.5rem] p-6 shadow-2xl overflow-y-auto max-h-[90vh] scale-in-center">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-black text-slate-800">บันทึกการแจกถุงยังชีพ</h3>
+                <button onclick="closeReliefModal()" class="text-slate-400 hover:text-red-500"><i class="fas fa-times-circle text-xl"></i></button>
+            </div>
+            <form id="reliefForm" onsubmit="saveReliefData(event)" class="space-y-4">
+                <div><label class="text-[10px] font-bold text-slate-400 uppercase ml-1">ชื่อ-นามสกุลผู้รับ</label><input type="text" id="rel_name" class="w-full p-3.5 bg-slate-50 border border-slate-100 rounded-2xl outline-none" required></div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="text-[10px] font-bold text-slate-400 uppercase ml-1">สถานะ</label><select id="rel_status" class="w-full p-3.5 bg-slate-50 border border-slate-100 rounded-2xl outline-none"><option value="เจ้าบ้าน">เจ้าบ้าน</option><option value="ผู้อาศัย">ผู้อาศัย</option></select></div>
+                    <div><label class="text-[10px] font-bold text-slate-400 uppercase ml-1">จำนวนผู้อาศัย</label><select id="rel_members" class="w-full p-3.5 bg-slate-50 border border-slate-100 rounded-2xl outline-none"></select></div>
+                </div>
+                <div><label class="text-[10px] font-bold text-slate-400 uppercase ml-1">ที่อยู่ปัจจุบัน (ที่รับของ)</label><select id="rel_address_select" onchange="toggleRelOtherAddr(this.value)" class="w-full p-3.5 bg-slate-50 border border-slate-100 rounded-2xl outline-none"></select><textarea id="rel_address_other" class="hidden w-full mt-2 p-3.5 bg-white border-2 border-amber-100 rounded-2xl outline-none h-20" placeholder="ระบุที่อยู่อื่นๆ..."></textarea></div>
+                <div class="pt-2">
+                    <div class="flex items-center gap-2 mb-2"><input type="checkbox" id="rel_same_addr" onchange="copyAddress(this.checked)" class="w-4 h-4"><label for="rel_same_addr" class="text-xs text-slate-500 font-bold">ที่อยู่ทะเบียนบ้าน ตรงกับที่อยู่ปัจจุบัน</label></div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">ที่อยู่ตามทะเบียนบ้าน</label><textarea id="rel_regis_address" class="w-full p-3.5 bg-slate-50 border border-slate-100 rounded-2xl outline-none h-20" required></textarea>
+                </div>
+                <button type="submit" class="w-full bg-amber-500 text-white py-4 rounded-2xl font-black shadow-lg hover:bg-amber-600 transition-all mt-4">บันทึกข้อมูล</button>
+            </form>
+        </div>
+    </div>
+
+
+</section>
+
                 <section id="regisPage" class="content-page hidden">
     <div class="bg-white p-6 md:p-10 rounded-3xl shadow-lg border border-blue-50 max-w-xl mx-auto">
         <div class="flex items-center gap-3 mb-6">
@@ -474,10 +573,11 @@
             const activeMobile = document.querySelector(`.mobile-nav-btn[data-page="${pageId}"]`);
             if(activeMobile) activeMobile.classList.add('active-menu-mobile');
             
-            const titles = { water:'สถานการณ์ระดับน้ำ', addWater:'รายงานสถานการณ์ระดับน้ำ', shelter:'ศูนย์พักพิง', regis:'ลงทะเบียนศูนย์พักพิง', looker:'รายงานข้อมูลน้ำท่วม' };
+            const titles = { water:'สถานการณ์ระดับน้ำ', addWater:'รายงานสถานการณ์ระดับน้ำ', shelter:'ศูนย์พักพิง', regis:'ลงทะเบียนศูนย์พักพิง', looker:'รายงานข้อมูลน้ำท่วม',relief:'ข้อมูลผู้รับถุงยังชีพ' };
             document.getElementById('pageTitle').innerText = titles[pageId];
             if(pageId === 'looker') document.getElementById('lookerFrame').src = LOOKER_URL;
-            
+            if(pageId === 'relief') renderReliefTable(store.reliefData);
+
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -531,11 +631,19 @@
                             store.addresses.map(a => `<option value="${a}">${a}</option>`).join('') +
                             '<option value="other">อื่น ๆ (ระบุเอง)</option>';
             document.getElementById('regis_address_select').innerHTML = addrOpts;
+
+            initReliefForm();
         }
 
         // 3. ประมวลผลหน้าสถานการณ์น้ำ (กราฟ + การ์ด)
+        
         setDateFilter('week');
         renderWaterCards();
+
+        // 3. ประมวลผลตารางข้อมูลผู้รับถุงยังชีพ
+        if (store.reliefData) {
+                renderReliefTable(store.reliefData);
+            }
 
         // 4. ประมวลผลหน้าศูนย์พักพิง (สถิติ + กราฟวงกลม + รายชื่อ)
         if (store.evacuees) {
@@ -550,6 +658,94 @@
         Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
     }
 }
+        // --- Relief Functions ---
+        function initReliefForm() {
+    // 1. สร้างตัวเลือกจำนวนสมาชิก 1-30
+    let opts = "";
+    for(let i=1; i<=30; i++) {
+        opts += `<option value="${i}">${i} คน</option>`;
+    }
+    const membersSelect = document.getElementById('rel_members');
+    if(membersSelect) membersSelect.innerHTML = opts;
+
+    // 2. สร้างตัวเลือกที่อยู่จากข้อมูลใน store
+    const relAddrSelect = document.getElementById('rel_address_select');
+    if (relAddrSelect && store.addresses && store.addresses.length > 0) {
+        const addrOpts = '<option value="" disabled selected>เลือกที่อยู่</option>' + 
+                        store.addresses.map(a => `<option value="${a}">${a}</option>`).join('') + 
+                        '<option value="other">อื่นๆ (ระบุเอง)</option>';
+        relAddrSelect.innerHTML = addrOpts;
+    }
+}
+
+        function openReliefModal() { document.getElementById('reliefModal').classList.remove('hidden'); }
+        function closeReliefModal() { document.getElementById('reliefModal').classList.add('hidden'); }
+        function toggleRelOtherAddr(val) { document.getElementById('rel_address_other').classList.toggle('hidden', val !== 'other'); }
+        function copyAddress(isChecked) {
+            if (isChecked) {
+                const sel = document.getElementById('rel_address_select').value;
+                const other = document.getElementById('rel_address_other').value;
+                document.getElementById('rel_regis_address').value = (sel === 'other') ? other : sel;
+            } else { document.getElementById('rel_regis_address').value = ''; }
+        }
+
+        async function saveReliefData(e) {
+            e.preventDefault();
+            const payload = {
+                action: 'saveRelief',
+                name: document.getElementById('rel_name').value,
+                status: document.getElementById('rel_status').value,
+                members: document.getElementById('rel_members').value,
+                address: document.getElementById('rel_address_select').value === 'other' ? document.getElementById('rel_address_other').value : document.getElementById('rel_address_select').value,
+                regisAddress: document.getElementById('rel_regis_address').value
+            };
+            Swal.fire({ title: 'กำลังบันทึก...', didOpen: () => Swal.showLoading() });
+            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+            const result = await res.json();
+            if(result.success) {
+                Swal.fire('สำเร็จ', 'บันทึกข้อมูลเรียบร้อย', 'success');
+                closeReliefModal();
+                loadData();
+            }
+        }
+
+        function renderReliefTable(data, isSearching = false) {
+    const tableBody = document.getElementById('reliefTableBody');
+    if (!tableBody) return;
+
+    if (!data || data.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-20 text-slate-400 font-bold"><i class="fas fa-search text-3xl mb-3 block opacity-20"></i>ไม่พบข้อมูลผู้รับถุงยังชีพ</td></tr>`;
+        return;
+    }
+
+    // ถ้าไม่ได้กำลังค้นหา ให้เอาข้อมูลล่าสุดขึ้นก่อน (reverse)
+    let displayData = isSearching ? data : [...data].reverse();
+
+    tableBody.innerHTML = displayData.map((r, index) => {
+        const date = new Date(r[0]).toLocaleString('th-TH', { day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+        const statusColor = r[2] === 'เจ้าบ้าน' ? 'bg-green-50 text-green-600 border-green-100' : 'bg-amber-50 text-amber-600 border-amber-100';
+        
+        return `
+            <tr class="hover:bg-amber-50/20 transition-all">
+                <td class="p-5 text-center font-bold text-slate-300">${isSearching ? '•' : index + 1}</td>
+                <td class="p-5">
+                    <div class="text-[9px] text-slate-400 font-bold mb-1"><i class="far fa-clock mr-1"></i>${date}</div>
+                    <div class="font-black text-slate-700 text-sm">${r[1]}</div>
+                </td>
+                <td class="p-5 text-slate-600 leading-relaxed font-medium">${r[4]}</td>
+                <td class="p-5 text-center">
+                    <span class="inline-block bg-slate-100 text-slate-600 px-3 py-1 rounded-xl font-black">${r[3]} คน</span>
+                </td>
+                <td class="p-5">
+                    <span class="px-3 py-1 rounded-full font-black text-[9px] border ${statusColor} shadow-sm uppercase">
+                        ${r[2]}
+                    </span>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+        
         function selectTrend(value, btn) {
     // เก็บค่าลงใน Input Hidden เพื่อส่งไปพร้อมฟอร์ม
     document.getElementById('water_trend').value = value;
@@ -1070,7 +1266,28 @@ function toggleHealthNote(val) {
     const container = document.getElementById('health_note_container');
     container.classList.toggle('hidden', val === 'ปกติ');
 }
+function filterReliefTable() {
+    const searchTerm = document.getElementById('reliefSearchInput').value.toLowerCase();
+    const allData = store.reliefData || [];
+    
+    // กรองข้อมูลจากชื่อ (Index 1) และ ที่อยู่ (Index 4)
+    const filtered = allData.filter(r => {
+        const name = (r[1] || "").toLowerCase();
+        const address = (r[4] || "").toLowerCase();
+        return name.includes(searchTerm) || address.includes(searchTerm);
+    });
+
+    // อัปเดตตัวเลขจำนวนที่ค้นเจอ
+    const matchCountEl = document.getElementById('reliefMatchCount');
+    if (matchCountEl) {
+        matchCountEl.innerText = `พบ ${filtered.length} จาก ${allData.length} รายการ`;
+    }
+
+    // ส่งข้อมูลที่กรองแล้วไปแสดงผลในตาราง
+    renderReliefTable(filtered);
+}
     </script>
 </body>
 </html>
+
 
