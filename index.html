@@ -87,8 +87,8 @@
     <div id="loginPage">
         <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-sm text-center mx-4">
             <img src="https://img2.pic.in.th/pic/71f81565dc59a7f9545542493a5514ab.png" class="w-20 mx-auto mb-4">
-            <h1 class="text-xl font-bold text-blue-900 mb-2">รายงานสถานการณ์น้ำท่วม</h1>
-            <p class="text-sm text-slate-500 mb-8">เทศบาลตำบลตันหยงมัส</p>
+            <h2 class="text-xl font-bold text-blue-900 mb-2">รายงานสถานการณ์น้ำท่วม</h2>
+            <h1 class="text-sm text-slate-500 mb-8">เทศบาลตำบลตันหยงมัส</h1>
             <input type="text" id="username" placeholder="ระบุชื่อผู้ใช้งาน" class="w-full p-4 border border-blue-100 rounded-2xl mb-4 text-center font-bold outline-none focus:ring-2 focus:ring-blue-400 bg-blue-50">
             <button onclick="doLogin()" id="loginBtn" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 transition-all active:scale-95 shadow-lg">เข้าใช้งานระบบ</button>
         </div>
@@ -365,33 +365,42 @@
 <section id="reliefPage" class="content-page hidden animate-fade-in">
     
     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
-        <div class="flex-shrink-0">
-            <h2 class="text-2xl font-black text-slate-800 tracking-tight">ข้อมูลผู้รับถุงยังชีพ</h2>
-            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">เทศบาลตำบลตันหยงมัส</p>
+    
+    <div class="bg-white border border-amber-100 rounded-[2rem] p-4 shadow-sm flex items-center gap-4 min-w-[200px]">
+        <div class="w-14 h-14 bg-gradient-to-br from-amber-400 to-amber-500 text-white rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-amber-100">
+            <i class="fas fa-boxes-stacked"></i>
         </div>
-
-        <div class="flex flex-col sm:flex-row gap-3 flex-1 lg:max-w-3xl">
-            <div class="relative flex-1 group">
-                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <i class="fas fa-search text-slate-300 group-focus-within:text-amber-500 transition-colors text-sm"></i>
-                </div>
-                <input type="text" id="reliefSearchInput" onkeyup="filterReliefTable()" 
-                    placeholder="ค้นหาชื่อ หรือที่อยู่..." 
-                    class="w-full pl-11 pr-32 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-amber-50 focus:border-amber-400 transition-all shadow-sm text-sm font-medium"
-                >
-                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                    <span id="reliefMatchCount" class="text-[8px] font-black text-amber-600 bg-amber-50 px-2 py-1 rounded-lg border border-amber-100">
-                        รอข้อมูล...
-                    </span>
-                </div>
+        <div>
+            <p class="text-[10px] text-slate-400 font-bold uppercase leading-none mb-1.5 tracking-wider">จำนวนถุงยังชีพที่แจกแล้ว</p>
+            <div class="flex items-baseline gap-1">
+                <p id="totalReliefCount" class="text-3xl font-black text-slate-800 leading-none">0</p>
+                <p class="text-xs font-bold text-slate-400">ชุด</p>
             </div>
-
-            <button onclick="openReliefModal()" class="bg-amber-500 text-white px-6 py-3.5 rounded-2xl font-black shadow-lg shadow-amber-200 hover:bg-amber-600 transition-all active:scale-95 flex items-center justify-center whitespace-nowrap">
-                <i class="fas fa-plus-circle mr-2"></i>
-                บันทึกการแจก
-            </button>
         </div>
     </div>
+
+    <div class="flex flex-col sm:flex-row gap-3 flex-1 lg:max-w-2xl">
+        <div class="relative flex-1 group">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <i class="fas fa-search text-slate-300 group-focus-within:text-amber-500 transition-colors text-sm"></i>
+            </div>
+            <input type="text" id="reliefSearchInput" onkeyup="filterReliefTable()" 
+                placeholder="ค้นหาชื่อ หรือที่อยู่..." 
+                class="w-full pl-11 pr-32 py-4 bg-white border border-slate-200 rounded-[1.5rem] outline-none focus:ring-4 focus:ring-amber-50 focus:border-amber-400 transition-all shadow-sm text-sm font-medium"
+            >
+            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                <span id="reliefMatchCount" class="text-[8px] font-black text-amber-600 bg-amber-50 px-2 py-1 rounded-lg border border-amber-100 uppercase">
+                    Ready
+                </span>
+            </div>
+        </div>
+
+        <button onclick="openReliefModal()" class="bg-amber-500 text-white px-8 py-4 rounded-[1.5rem] font-black shadow-lg shadow-amber-200 hover:bg-amber-600 transition-all active:scale-95 flex items-center justify-center whitespace-nowrap">
+            <i class="fas fa-plus-circle mr-2"></i>
+            บันทึกการแจก
+        </button>
+    </div>
+</div>
 
     <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden transition-all">
         <div class="overflow-x-auto overflow-y-auto max-h-[650px] custom-scrollbar">
@@ -549,6 +558,11 @@
         let store = { waterPoints:[], waterLevels:[] };
         let currentUser = "";
         let waterChartInstance = null;
+        let userRole = ""; // เก็บสิทธิ์ผู้ใช้งานปัจจุบัน
+        const PAGE_PERMISSIONS = {
+            'admin': ['water', 'addWater', 'shelter', 'regis', 'relief', 'looker'],
+            'shelter': ['shelter']
+        };
 
         // --- Navigation Logic ---
         function toggleSidebar() {
@@ -561,49 +575,86 @@
         }
 
         function showPage(pageId) {
-            document.querySelectorAll('.content-page').forEach(p => p.classList.add('hidden'));
-            document.getElementById(pageId + 'Page').classList.remove('hidden');
-            
-            // Update Active Menu Desktop
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active-menu'));
-            const activeDesktop = document.querySelector(`.nav-btn[data-page="${pageId}"]`);
-            if(activeDesktop) activeDesktop.classList.add('active-menu');
+    const allowedPages = PAGE_PERMISSIONS[userRole] || [];
+    
+    // ตรวจสอบความปลอดภัย: หากพยายามเข้าหน้าที่มีไม่มีสิทธิ์
+    if (!allowedPages.includes(pageId)) {
+        Swal.fire('สิทธิ์ไม่เพียงพอ', 'บัญชีของคุณเข้าถึงได้เฉพาะส่วนงานที่เกี่ยวข้องเท่านั้น', 'warning');
+        return;
+    }
 
-            // Update Active Menu Mobile
-            document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active-menu-mobile'));
-            const activeMobile = document.querySelector(`.mobile-nav-btn[data-page="${pageId}"]`);
-            if(activeMobile) activeMobile.classList.add('active-menu-mobile');
-            
-            const titles = { water:'สถานการณ์ระดับน้ำ', addWater:'รายงานสถานการณ์ระดับน้ำ', shelter:'ศูนย์พักพิง', regis:'ลงทะเบียนศูนย์พักพิง', looker:'รายงานข้อมูลน้ำท่วม',relief:'ข้อมูลผู้รับถุงยังชีพ' };
-            document.getElementById('pageTitle').innerText = titles[pageId];
-            if(pageId === 'looker') document.getElementById('lookerFrame').src = LOOKER_URL;
-            if(pageId === 'relief') renderReliefTable(store.reliefData);
-
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+    // ซ่อนทุกหน้า
+    document.querySelectorAll('.content-page').forEach(p => p.classList.add('hidden'));
+    
+    // แสดงหน้าทื่เลือก
+    const target = document.getElementById(pageId + 'Page');
+    if(target) target.classList.remove('hidden');
+    
+    // อัปเดตสถานะปุ่มเมนู (Active State)
+    updateActiveMenu(pageId);
+    
+    // เปลี่ยนชื่อหัวข้อหน้า
+    const titles = { 
+        water: 'สถานการณ์ระดับน้ำ', 
+        addWater: 'รายงานระดับน้ำ', 
+        shelter: 'ศูนย์พักพิง', 
+        regis: 'ลงทะเบียนผู้ประสบภัย', 
+        relief: 'ข้อมูลผู้รับถุงยังชีพ', 
+        looker: 'รายงานสรุปข้อมูล' 
+    };
+    document.getElementById('pageTitle').innerText = titles[pageId] || "ระบบรายงาน";
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
         // --- Auth & Data (Original Scripts) ---
         async function doLogin() {
-            const user = document.getElementById('username').value.trim();
-            if(!user) return Swal.fire('แจ้งเตือน', 'กรุณาระบุชื่อผู้ใช้งาน', 'warning');
-            const btn = document.getElementById('loginBtn');
-            btn.innerText = 'กำลังตรวจสอบ...'; btn.disabled = true;
+    const user = document.getElementById('username').value.trim();
+    if(!user) return Swal.fire('แจ้งเตือน', 'กรุณาระบุชื่อผู้ใช้งาน', 'warning');
+    
+    const btn = document.getElementById('loginBtn');
+    btn.innerText = 'กำลังตรวจสอบ...'; 
+    btn.disabled = true;
 
-            try {
-                const res = await fetch(API_URL, { method:'POST', body: JSON.stringify({action:'login', username:user}) });
-                const data = await res.json();
-                if(data.success) {
-                    currentUser = user;
-                    document.getElementById('loginPage').style.display = 'none';
-                    document.getElementById('mainApp').classList.remove('hidden');
-                    await loadData();
-                    showPage('water');
-                } else {
-                    Swal.fire('ผิดพลาด', 'ไม่พบชื่อผู้ใช้งานในระบบ', 'error');
-                    btn.innerText = 'เข้าใช้งานระบบ'; btn.disabled = false;
-                }
-            } catch(e) { Swal.fire('ผิดพลาด', 'การเชื่อมต่อล้มเหลว', 'error'); btn.disabled = false; }
+    try {
+        const res = await fetch(API_URL, { 
+            method: 'POST', 
+            body: JSON.stringify({ action: 'login', username: user }) 
+        });
+
+        // ตรวจสอบว่า Response จาก Google Apps Script ถูกต้องหรือไม่
+        if (!res.ok) throw new Error('Network response was not ok');
+
+        const data = await res.json();
+        
+        if(data.success) {
+            currentUser = user;
+            userRole = data.role || 'user'; // รับค่า role
+            
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('mainApp').classList.remove('hidden');
+            
+            await loadData();
+            updateMenuVisibility();
+            
+            // นำทางไปยังหน้าแรกตามสิทธิ์
+            const initialPage = (userRole === 'shelter') ? 'shelter' : 'water';
+            showPage(initialPage);
+
+        } else {
+            // กรณีชื่อผู้ใช้ไม่ถูกต้อง
+            Swal.fire('ไม่พบผู้ใช้งาน', data.error || 'กรุณาตรวจสอบชื่อผู้ใช้ใหม่อีกครั้ง', 'error');
+            btn.innerText = 'เข้าใช้งานระบบ'; 
+            btn.disabled = false;
         }
+    } catch(e) { 
+        // แสดงข้อผิดพลาดจริงใน Console เพื่อการ Debug
+        console.error("Login Error:", e);
+        Swal.fire('ผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ (Network Error)', 'error'); 
+        btn.innerText = 'เข้าใช้งานระบบ';
+        btn.disabled = false; 
+    }
+}
 
         async function loadData() {
     try {
@@ -714,32 +765,37 @@
     const tableBody = document.getElementById('reliefTableBody');
     if (!tableBody) return;
 
+    // อัปเดตตัวเลขรวมทั้งหมด (ถ้ากำลังค้นหาให้แสดงยอดตามผลการค้นหา)
+    const summaryData = isSearching ? data : (store.reliefData || []);
+    document.getElementById('totalReliefCount').innerText = summaryData.length;
+
     if (!data || data.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-20 text-slate-400 font-bold"><i class="fas fa-search text-3xl mb-3 block opacity-20"></i>ไม่พบข้อมูลผู้รับถุงยังชีพ</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-20 text-slate-400 font-bold"><i class="fas fa-search-minus text-3xl mb-3 block opacity-20"></i>ไม่พบข้อมูล</td></tr>`;
         return;
     }
 
-    // ถ้าไม่ได้กำลังค้นหา ให้เอาข้อมูลล่าสุดขึ้นก่อน (reverse)
     let displayData = isSearching ? data : [...data].reverse();
 
     tableBody.innerHTML = displayData.map((r, index) => {
-        const date = new Date(r[0]).toLocaleString('th-TH', { day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' });
-        const statusColor = r[2] === 'เจ้าบ้าน' ? 'bg-green-50 text-green-600 border-green-100' : 'bg-amber-50 text-amber-600 border-amber-100';
+        const timestamp = r[0] ? new Date(r[0]).toLocaleString('th-TH', { day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-';
+        const statusClass = r[2] === 'ปกติ' ? 'bg-green-50 text-green-600 border-green-100' : 'bg-amber-50 text-amber-600 border-amber-100';
         
         return `
-            <tr class="hover:bg-amber-50/20 transition-all">
-                <td class="p-5 text-center font-bold text-slate-300">${isSearching ? '•' : index + 1}</td>
-                <td class="p-5">
-                    <div class="text-[9px] text-slate-400 font-bold mb-1"><i class="far fa-clock mr-1"></i>${date}</div>
-                    <div class="font-black text-slate-700 text-sm">${r[1]}</div>
+            <tr class="hover:bg-slate-50 transition-colors">
+                <td class="p-5 text-center font-bold text-slate-300">
+                    ${isSearching ? '•' : (displayData.length - index)}
                 </td>
-                <td class="p-5 text-slate-600 leading-relaxed font-medium">${r[4]}</td>
+                <td class="p-5">
+                    <div class="text-[9px] text-slate-400 font-bold mb-1"><i class="far fa-clock mr-1"></i>${timestamp}</div>
+                    <div class="font-black text-slate-700 text-sm">${r[1] || 'ไม่ระบุชื่อ'}</div>
+                </td>
+                <td class="p-5 text-slate-600 font-medium leading-relaxed">${r[4] || '-'}</td>
                 <td class="p-5 text-center">
-                    <span class="inline-block bg-slate-100 text-slate-600 px-3 py-1 rounded-xl font-black">${r[3]} คน</span>
+                    <span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-xl font-black">${r[3] || 0}</span>
                 </td>
-                <td class="p-5">
-                    <span class="px-3 py-1 rounded-full font-black text-[9px] border ${statusColor} shadow-sm uppercase">
-                        ${r[2]}
+                <td class="p-5 text-center">
+                    <span class="px-3 py-1 rounded-full font-black text-[9px] border ${statusClass} shadow-sm uppercase">
+                        ${r[2] || 'ปกติ'}
                     </span>
                 </td>
             </tr>
@@ -1115,7 +1171,7 @@ async function checkPasswordBeforeDetail(index) {
         title: 'ระบบรักษาความปลอดภัย',
         text: 'กรุณาระบุรหัสผ่านเพื่อดูข้อมูลส่วนตัว',
         input: 'password',
-        inputPlaceholder: 'รหัสผ่าน 4 หลัก',
+        inputPlaceholder: ' ',
         confirmButtonText: 'ยืนยัน',
         confirmButtonColor: '#2563eb',
         showCancelButton: true,
@@ -1287,8 +1343,36 @@ function filterReliefTable() {
     // ส่งข้อมูลที่กรองแล้วไปแสดงผลในตาราง
     renderReliefTable(filtered);
 }
+    function updateMenuVisibility() {
+    const allowedPages = PAGE_PERMISSIONS[userRole] || [];
+
+    // 1. จัดการ Sidebar (Desktop)
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        const page = btn.getAttribute('data-page');
+        if (allowedPages.includes(page)) {
+            btn.classList.remove('hidden');
+            btn.style.display = 'flex';
+        } else {
+            btn.classList.add('hidden');
+            btn.style.display = 'none';
+        }
+    });
+
+    // 2. จัดการ Bottom Nav (Mobile)
+    document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+        const page = btn.getAttribute('data-page');
+        if (allowedPages.includes(page)) {
+            btn.classList.remove('hidden');
+            btn.style.display = 'flex';
+        } else {
+            btn.classList.add('hidden');
+            btn.style.display = 'none';
+        }
+    });
+}
     </script>
 </body>
 </html>
+
 
 
