@@ -57,6 +57,17 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+    .trend-btn { opacity: 0.6; transform: scale(0.95); }
+    .active-trend { 
+        opacity: 1 !important; 
+        transform: scale(1.05) !important; 
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+    }
+    /* สีขอบปุ่มเมื่อถูกเลือก */
+    .active-trend[onclick*="เพิ่มขึ้น"] { border-color: #ef4444 !important; }
+    .active-trend[onclick*="คงตัว"] { border-color: #eab308 !important; }
+    .active-trend[onclick*="ลดลง"] { border-color: #22c55e !important; }
+
     </style>
 </head>
 <body class="text-slate-700">
@@ -156,36 +167,68 @@
                 </section>
 
                 <section id="addWaterPage" class="content-page hidden">
-                    <div class="bg-white p-6 md:p-10 rounded-3xl shadow-lg border border-blue-50 max-w-2xl mx-auto">
-                        <h3 class="text-xl font-bold text-blue-900 mb-6 flex items-center font-bold tracking-tight"><i class="fas fa-camera-retro mr-3 text-blue-500"></i> บันทึกระดับน้ำ</h3>
-                        <form id="waterForm" onsubmit="saveWater(event)" class="space-y-4">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div><label class="text-xs font-bold text-slate-500 ml-1">พื้นที่จุดวัดน้ำ</label><select id="water_loc" class="w-full p-3 border border-blue-100 bg-blue-50 rounded-xl outline-none" required></select></div>
-                                <div><label class="text-xs font-bold text-slate-500 ml-1">แนวโน้มน้ำ</label>
-                                    <select id="water_trend" class="w-full p-3 border border-blue-100 bg-blue-50 rounded-xl outline-none" required>
-                                        <option value="เพิ่มขึ้น">เพิ่มขึ้น (สีแดง)</option>
-                                        <option value="คงตัว" selected>คงตัว (สีเหลือง)</option>
-                                        <option value="ลดลง">ลดลง (สีเขียว)</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div><label class="text-xs font-bold text-slate-500 ml-1">ระดับน้ำ (ซม.)</label><input type="number" id="water_val" class="w-full p-3 border border-blue-100 bg-blue-50 rounded-xl font-bold text-blue-600 outline-none" required></div>
-                                <div><label class="text-xs font-bold text-slate-500 ml-1">พิกัด GPS</label><div class="flex gap-2"><input type="text" id="water_coords" readonly class="w-full p-3 border border-blue-100 bg-gray-100 rounded-xl text-[10px] outline-none" placeholder="ดึงพิกัดอัตโนมัติ"><button type="button" onclick="getLocation()" class="bg-blue-100 text-blue-600 px-4 rounded-xl hover:bg-blue-200 transition"><i class="fas fa-map-marker-alt"></i></button></div></div>
-                            </div>
-                            <div>
-                                <label class="text-xs font-bold text-slate-500 ml-1">รูปถ่ายสถานการณ์</label>
-                                <input type="file" id="water_img" accept="image/*" capture="environment" onchange="previewImg(event)" class="hidden">
-                                <div onclick="document.getElementById('water_img').click()" class="border-2 border-dashed border-blue-200 rounded-2xl h-40 flex flex-col items-center justify-center cursor-pointer hover:bg-blue-50 transition overflow-hidden" id="img_preview_box">
-                                    <i class="fas fa-camera text-3xl text-blue-300"></i>
-                                    <p class="text-xs text-blue-400 mt-2 font-bold">แตะเพื่อถ่ายรูปหรือเลือกไฟล์</p>
-                                </div>
-                            </div>
-                            <div><label class="text-xs font-bold text-slate-500 ml-1">รายละเอียดเพิ่มเติม</label><textarea id="water_note" class="w-full p-3 border border-blue-100 bg-blue-50 rounded-xl h-20 outline-none" placeholder="ระบุรายละเอียดเพิ่มเติม..."></textarea></div>
-                            <button id="saveWaterBtn" type="submit" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-xl hover:bg-blue-700 transition active:scale-95">ส่งรายงานน้ำ</button>
-                        </form>
+    <div class="bg-white p-6 md:p-10 rounded-3xl shadow-lg border border-blue-50 max-w-2xl mx-auto">
+        <h3 class="text-xl font-bold text-blue-900 mb-6 flex items-center tracking-tight">
+            <i class="fas fa-camera-retro mr-3 text-blue-500"></i> บันทึกระดับน้ำ
+        </h3>
+        <form id="waterForm" onsubmit="saveWater(event)" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="text-xs font-bold text-slate-500 ml-1">พื้นที่จุดวัดน้ำ</label>
+                    <select id="water_loc" class="w-full p-3 border border-blue-100 bg-blue-50 rounded-xl outline-none" required></select>
+                </div>
+                
+                <div>
+                    <label class="text-xs font-bold text-slate-500 ml-1">แนวโน้มระดับน้ำ</label>
+                    <div class="flex gap-2 mt-1">
+                        <input type="hidden" id="water_trend" value="คงตัว" required>
+                        <button type="button" onclick="selectTrend('เพิ่มขึ้น', this)" class="trend-btn flex-1 py-3 rounded-xl border-2 border-transparent bg-red-50 text-red-600 text-[11px] font-bold transition-all flex flex-col items-center gap-1">
+                            <i class="fas fa-chart-line"></i> เพิ่มขึ้น
+                        </button>
+                        <button type="button" onclick="selectTrend('คงตัว', this)" class="trend-btn flex-1 py-3 rounded-xl border-2 border-yellow-400 bg-yellow-50 text-yellow-600 text-[11px] font-bold transition-all flex flex-col items-center gap-1 active-trend">
+                            <i class="fas fa-equals"></i> คงตัว
+                        </button>
+                        <button type="button" onclick="selectTrend('ลดลง', this)" class="trend-btn flex-1 py-3 rounded-xl border-2 border-transparent bg-green-50 text-green-600 text-[11px] font-bold transition-all flex flex-col items-center gap-1">
+                            <i class="fas fa-chart-line fa-flip-vertical"></i> ลดลง
+                        </button>
                     </div>
-                </section>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="text-xs font-bold text-slate-500 ml-1">ระดับน้ำ (ซม.)</label>
+                    <input type="number" id="water_val" class="w-full p-3 border border-blue-100 bg-blue-50 rounded-xl font-bold text-blue-600 outline-none" required>
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-500 ml-1">พิกัด GPS</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="water_coords" readonly class="w-full p-3 border border-blue-100 bg-gray-100 rounded-xl text-[10px] outline-none" placeholder="ดึงพิกัดอัตโนมัติ">
+                        <button type="button" onclick="getLocation()" class="bg-blue-100 text-blue-600 px-4 rounded-xl hover:bg-blue-200 transition">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <label class="text-xs font-bold text-slate-500 ml-1">รูปถ่ายสถานการณ์</label>
+                <input type="file" id="water_img" accept="image/*" capture="environment" onchange="previewImg(event)" class="hidden">
+                <div onclick="document.getElementById('water_img').click()" class="border-2 border-dashed border-blue-200 rounded-2xl h-40 flex flex-col items-center justify-center cursor-pointer hover:bg-blue-50 transition overflow-hidden" id="img_preview_box">
+                    <i class="fas fa-camera text-3xl text-blue-300"></i>
+                    <p class="text-xs text-blue-400 mt-2 font-bold">แตะเพื่อถ่ายรูปหรือเลือกไฟล์</p>
+                </div>
+            </div>
+
+            <div>
+                <label class="text-xs font-bold text-slate-500 ml-1">รายละเอียดเพิ่มเติม</label>
+                <textarea id="water_note" class="w-full p-3 border border-blue-100 bg-blue-50 rounded-xl h-20 outline-none" placeholder="ระบุรายละเอียดเพิ่มเติม..."></textarea>
+            </div>
+
+            <button id="saveWaterBtn" type="submit" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-xl hover:bg-blue-700 transition active:scale-95">ส่งรายงานน้ำ</button>
+        </form>
+    </div>
+</section>
 
                 <section id="shelterPage" class="content-page hidden">
     <div class="mb-6 overflow-x-auto no-scrollbar flex gap-2 pb-2">
@@ -507,7 +550,18 @@
         Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
     }
 }
+        function selectTrend(value, btn) {
+    // เก็บค่าลงใน Input Hidden เพื่อส่งไปพร้อมฟอร์ม
+    document.getElementById('water_trend').value = value;
 
+    // เคลียร์สถานะปุ่มอื่นทั้งหมด
+    document.querySelectorAll('.trend-btn').forEach(el => {
+        el.classList.remove('active-trend');
+    });
+
+    // เพิ่มสถานะให้ปุ่มที่ถูกกด
+    btn.classList.add('active-trend');
+}
         function setDateFilter(type) {
             const end = new Date(); let start = new Date();
             if (type === 'today') start.setHours(0,0,0,0);
@@ -1019,5 +1073,4 @@ function toggleHealthNote(val) {
     </script>
 </body>
 </html>
-
 
