@@ -557,8 +557,14 @@
         
         let store = { waterPoints:[], waterLevels:[] };
         let currentUser = "";
+        let userRole = ""; // เพิ่มตัวแปรเก็บสิทธิ์
         let waterChartInstance = null;
 
+        // กำหนดว่าแต่ละสิทธิ์เข้าหน้าไหนได้บ้าง
+        const PAGE_ACCESS = {
+        'admin': ['water', 'addWater', 'shelter', 'regis', 'relief', 'looker'],
+        'shelter': ['shelter']
+        };
         // --- Navigation Logic ---
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -570,7 +576,15 @@
         }
 
         function showPage(pageId) {
+            const allowed = PAGE_ACCESS[userRole] || ['shelter'];
+            // ป้องกันการเข้าหน้าผ่าน Code ถ้าไม่มีสิทธิ์
+    if (!allowed.includes(pageId)) {
+        Swal.fire('สิทธิ์ไม่เพียงพอ', 'คุณไม่มีสิทธิ์เข้าถึงส่วนนี้', 'warning');
+        return;
+    }
             document.querySelectorAll('.content-page').forEach(p => p.classList.add('hidden'));
+            const target = document.getElementById(pageId + 'Page');
+            if(target) target.classList.remove('hidden');
             document.getElementById(pageId + 'Page').classList.remove('hidden');
             
             // Update Active Menu Desktop
@@ -593,26 +607,53 @@
 
         // --- Auth & Data (Original Scripts) ---
         async function doLogin() {
-            const user = document.getElementById('username').value.trim();
-            if(!user) return Swal.fire('แจ้งเตือน', 'กรุณาระบุชื่อผู้ใช้งาน', 'warning');
-            const btn = document.getElementById('loginBtn');
-            btn.innerText = 'กำลังตรวจสอบ...'; btn.disabled = true;
+    const user = document.getElementById('username').value.trim();
+    if(!user) return Swal.fire('แจ้งเตือน', 'กรุณาระบุชื่อผู้ใช้งาน', 'warning');
+    
+    const btn = document.getElementById('loginBtn');
+    btn.innerText = 'กำลังตรวจสอบสิทธิ์...'; 
+    btn.disabled = true;
 
-            try {
-                const res = await fetch(API_URL, { method:'POST', body: JSON.stringify({action:'login', username:user}) });
-                const data = await res.json();
-                if(data.success) {
-                    currentUser = user;
-                    document.getElementById('loginPage').style.display = 'none';
-                    document.getElementById('mainApp').classList.remove('hidden');
-                    await loadData();
-                    showPage('water');
-                } else {
-                    Swal.fire('ผิดพลาด', 'ไม่พบชื่อผู้ใช้งานในระบบ', 'error');
-                    btn.innerText = 'เข้าใช้งานระบบ'; btn.disabled = false;
-                }
-            } catch(e) { Swal.fire('ผิดพลาด', 'การเชื่อมต่อล้มเหลว', 'error'); btn.disabled = false; }
+    try {
+        const res = await fetch(API_URL, { 
+            method: 'POST', 
+            body: JSON.stringify({ action: 'login', username: user }) 
+        });
+        const data = await res.json();
+        
+        if(data.success) {
+            currentUser = user;
+            userRole = data.role; // รับสิทธิ์มาจากเซิร์ฟเวอร์
+
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('mainApp').classList.remove('hidden');
+            
+            // จัดการซ่อน/แสดงเมนูตามสิทธิ์
+            updateMenuByRole();
+            
+            // นำทางไปหน้าแรกที่เหมาะสม
+            const firstPage = (userRole === 'shelter') ? 'shelter' : 'water';
+            showPage(firstPage);
+
+            await loadData();
+        } else {
+            Swal.fire('ผิดพลาด', data.error, 'error');
+            btn.innerText = 'เข้าใช้งานระบบ'; btn.disabled = false;
         }
+    } catch(e) { 
+        Swal.fire('การเชื่อมต่อขัดข้อง', 'โปรดตรวจสอบ URL ของ Web App ล่าสุด', 'error'); 
+        btn.disabled = false; 
+    }
+}
+        function updateMenuByRole() {
+    const allowed = PAGE_ACCESS[userRole] || ['shelter'];
+    
+    // วนลูปเช็คปุ่มเมนูทั้งหมด (ทั้ง Desktop และ Mobile)
+    document.querySelectorAll('.nav-btn, .mobile-nav-btn').forEach(btn => {
+        const page = btn.getAttribute('data-page');
+        btn.style.display = allowed.includes(page) ? 'flex' : 'none';
+    });
+}
 
         async function loadData() {
     try {
@@ -1304,6 +1345,4 @@ function filterReliefTable() {
     </script>
 </body>
 </html>
-
-
 
