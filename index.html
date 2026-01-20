@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ระบบเทศบาลตำบลตันหยงมัส</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
@@ -26,7 +27,7 @@
         .animate-pulse-fast { animation: pulse 1.5s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .7; } }
         
-        #loginPage { position: fixed; inset: 0; z-index: 1000; background-color: #2563eb; display: flex; align-items: center; justify-content: center; }
+        #loginPage { position: fixed; inset: 0; z-index: 1000; background-color: #2f3e5f; display: flex; align-items: center; justify-content: center; }
         /* ค้นหาส่วน <style> และเพิ่ม/แก้ไขโค้ดด้านล่างนี้ */
         .water-card-img-container { height: 100px; width: 100%; overflow: hidden; background-color: #e2e8f0; } /* เริ่มต้นที่ 100px สำหรับมือถือ */
             @media (min-width: 768px) { .water-card-img-container { height: 160px; } } /* ขยายเป็น 160px สำหรับคอมพิวเตอร์ */
@@ -63,8 +64,8 @@
     <div id="loginPage">
         <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-sm text-center mx-4">
             <img src="https://img2.pic.in.th/pic/71f81565dc59a7f9545542493a5514ab.png" class="w-20 mx-auto mb-4">
-            <h1 class="text-xl font-bold text-blue-900 mb-2">เทศบาลตำบลตันหยงมัส</h1>
-            <p class="text-sm text-slate-500 mb-8">ระบบรายงานสถานการณ์น้ำ</p>
+            <h1 class="text-xl font-bold text-blue-900 mb-2">รายงานสถานการณ์น้ำท่วม</h1>
+            <p class="text-sm text-slate-500 mb-8">เทศบาลตำบลตันหยงมัส</p>
             <input type="text" id="username" placeholder="ระบุชื่อผู้ใช้งาน" class="w-full p-4 border border-blue-100 rounded-2xl mb-4 text-center font-bold outline-none focus:ring-2 focus:ring-blue-400 bg-blue-50">
             <button onclick="doLogin()" id="loginBtn" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 transition-all active:scale-95 shadow-lg">เข้าใช้งานระบบ</button>
         </div>
@@ -75,15 +76,15 @@
         <aside id="sidebar" class="sidebar-desktop sidebar-expanded bg-white shadow-md flex-shrink-0 flex flex-col border-r border-blue-50 transition-all duration-300 sticky top-0 h-screen no-print">
             <div class="p-4 text-center border-b border-blue-50 relative">
                 <img src="https://img2.pic.in.th/pic/71f81565dc59a7f9545542493a5514ab.png" class="w-10 mx-auto">
-                <p class="logo-text text-[10px] font-bold text-blue-800 mt-2 uppercase">Tanyongmas City</p>
+                <h1 class="logo-text text-[10px] font-bold text-blue-800 mt-2 uppercase">ระบบรายงานสถานการณ์น้ำท่วม<br>เทศบาลตำบลตันหยงมัส</h1>
             </div>
 
             <nav class="mt-4 flex-1">
-                <button onclick="showPage('water')" class="nav-btn w-full text-left px-6 py-4 flex items-center text-sm text-slate-500 hover:bg-blue-50 active-menu" data-page="water"><i class="fas fa-tint w-6 text-center"></i> <span class="nav-text ml-3">สถานการณ์น้ำ</span></button>
-                <button onclick="showPage('addWater')" class="nav-btn w-full text-left px-6 py-4 flex items-center text-sm text-slate-500 hover:bg-blue-50" data-page="addWater"><i class="fas fa-plus-circle w-6 text-center"></i> <span class="nav-text ml-3">เพิ่มรายงานน้ำ</span></button>
+                <button onclick="showPage('water')" class="nav-btn w-full text-left px-6 py-4 flex items-center text-sm text-slate-500 hover:bg-blue-50 active-menu" data-page="water"><i class="fas fa-tint w-6 text-center"></i> <span class="nav-text ml-3">สถานการณ์ระดับน้ำ</span></button>
+                <button onclick="showPage('addWater')" class="nav-btn w-full text-left px-6 py-4 flex items-center text-sm text-slate-500 hover:bg-blue-50" data-page="addWater"><i class="fas fa-plus-circle w-6 text-center"></i> <span class="nav-text ml-3">รายงานระดับน้ำ</span></button>
                 <button onclick="showPage('shelter')" class="nav-btn w-full text-left px-6 py-4 flex items-center text-sm text-slate-500 hover:bg-blue-50" data-page="shelter"><i class="fas fa-hotel w-6 text-center"></i> <span class="nav-text ml-3">ศูนย์พักพิง</span></button>
                 <button onclick="showPage('regis')" class="nav-btn w-full text-left px-6 py-4 flex items-center text-sm text-slate-500 hover:bg-blue-50" data-page="regis"><i class="fas fa-user-plus w-6 text-center"></i> <span class="nav-text ml-3">ลงทะเบียนใหม่</span></button>
-                <button onclick="showPage('looker')" class="nav-btn w-full text-left px-6 py-4 flex items-center text-sm text-slate-500 hover:bg-blue-50" data-page="looker"><i class="fas fa-chart-pie w-6 text-center"></i> <span class="nav-text ml-3">Looker Studio</span></button>
+                <button onclick="showPage('looker')" class="nav-btn w-full text-left px-6 py-4 flex items-center text-sm text-slate-500 hover:bg-blue-50" data-page="looker"><i class="fas fa-chart-pie w-6 text-center"></i> <span class="nav-text ml-3">รายงานข้อมูลน้ำท่วม</span></button>
             </nav>
 
             <div class="p-4 border-t border-blue-50">
@@ -97,7 +98,7 @@
         <div class="bottom-nav-mobile hidden fixed bottom-0 left-0 right-0 bg-white border-t border-blue-100 justify-around items-center py-2 px-1 z-50 shadow-[0_-2px_15px_rgba(0,0,0,0.08)]">
             <button onclick="showPage('water')" class="mobile-nav-btn flex flex-col items-center flex-1 text-slate-400 py-1" data-page="water">
                 <i class="fas fa-tint text-xl"></i>
-                <span class="text-[10px] mt-1 font-bold">สถานการณ์น้ำ</span>
+                <span class="text-[10px] mt-1 font-bold">สถานการณ์ระดับน้ำ</span>
             </button>
             <button onclick="showPage('addWater')" class="mobile-nav-btn flex flex-col items-center flex-1 text-slate-400 py-1" data-page="addWater">
                 <i class="fas fa-plus-circle text-xl"></i>
@@ -109,13 +110,13 @@
             </button>
             <button onclick="showPage('regis')" class="mobile-nav-btn flex flex-col items-center flex-1 text-slate-400 py-1" data-page="regis">
                 <i class="fas fa-user-plus text-xl"></i>
-                <span class="text-[10px] mt-1 font-bold">ลงทะเบียน</span>
+                <span class="text-[10px] mt-1 font-bold">ลงทะเบียนศูนย์ฯ</span>
             </button>
         </div>
 
         <main class="flex-1 flex flex-col min-w-0 main-content-area">
             <header class="bg-white border-b border-blue-50 p-4 px-6 md:px-8 flex justify-between items-center sticky top-0 z-20 shadow-sm">
-                <h2 id="pageTitle" class="font-bold text-blue-900 uppercase text-sm md:text-base tracking-wide">สถานการณ์น้ำปัจจุบัน</h2>
+                <h2 id="pageTitle" class="font-bold text-blue-900 uppercase text-sm md:text-base tracking-wide">สถานการณ์ระดับน้ำปัจจุบัน</h2>
                 <div class="flex items-center gap-2">
                     <div class="text-[10px] text-blue-500 bg-blue-50 px-2 py-1 rounded-full font-bold no-print"><i class="far fa-clock"></i> <span id="lastUpdate">-</span></div>
                     <button onclick="loadData()" class="bg-blue-600 text-white w-8 h-8 rounded-lg hover:bg-blue-700 transition shadow-md active:scale-90 flex items-center justify-center"><i class="fas fa-sync-alt text-[10px]"></i></button>
@@ -189,9 +190,9 @@
                 <section id="shelterPage" class="content-page hidden">
     <div class="mb-6 overflow-x-auto no-scrollbar flex gap-2 pb-2">
         <button onclick="filterShelter('all')" class="shelter-filter-btn active-shelter-btn whitespace-nowrap px-4 py-2 rounded-2xl text-[11px] font-bold shadow-sm transition-all" data-center="all">ทั้งหมด</button>
-        <button onclick="filterShelter('ศูนย์เทศบาลฯ')" class="shelter-filter-btn bg-white whitespace-nowrap px-4 py-2 rounded-2xl text-[11px] font-bold shadow-sm transition-all" data-center="ศูนย์เทศบาลฯ">ศูนย์เทศบาลตำบลตันหยงมัส</button>
+        <button onclick="filterShelter('ศูนย์เทศบาลตำบลตันหยงมัส/บาลูกา')" class="shelter-filter-btn bg-white whitespace-nowrap px-4 py-2 rounded-2xl text-[11px] font-bold shadow-sm transition-all" data-center="ศูนย์เทศบาลตำบลตันหยงมัส/บาลูกา">ศูนย์เทศบาลตำบลตันหยงมัส</button>
         <button onclick="filterShelter('ศูนย์มัสยิดตันหยงมัส')" class="shelter-filter-btn bg-white whitespace-nowrap px-4 py-2 rounded-2xl text-[11px] font-bold shadow-sm transition-all" data-center="ศูนย์มัสยิดตันหยงมัส">ศูนย์มัสยิดตันหยงมัส</button>
-        <button onclick="filterShelter('ศูนย์โรงเรียนเขาพระ')" class="shelter-filter-btn bg-white whitespace-nowrap px-4 py-2 rounded-2xl text-[11px] font-bold shadow-sm transition-all" data-center="ศูนย์โรงเรียนเขาพระ">ศูนย์โรงเรียนเขาพระ</button>
+        <button onclick="filterShelter('ศูนย์โรงเรียนบ้านเขาพระ')" class="shelter-filter-btn bg-white whitespace-nowrap px-4 py-2 rounded-2xl text-[11px] font-bold shadow-sm transition-all" data-center="ศูนย์โรงเรียนบ้านเขาพระ">ศูนย์โรงเรียนบ้านเขาพระ</button>
     </div>
 
     <div class="grid grid-cols-2 md:grid-cols-12 gap-3 mb-6">
@@ -252,8 +253,8 @@
 
    <div class="bg-white rounded-3xl shadow-sm border border-blue-50 overflow-hidden mt-6">
     <div class="p-4 border-b border-blue-50 flex justify-between items-center bg-blue-50/30">
-        <h3 class="font-bold text-blue-900 text-sm italic">รายชื่อผู้เข้าพักพิง</h3>
-        <span id="shelterCountTag" class="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-bold">0 คน</span>
+        <h3 class="font-bold text-blue-900 text-sm">รายชื่อผู้เข้าพักพิง</h3>
+        
     </div>
     
     <div class="overflow-x-auto max-h-[550px] overflow-y-auto">
@@ -285,7 +286,7 @@
             </div>
             <h3 id="modalName" class="text-xl font-black text-white mb-1">ชื่อ-นามสกุล</h3>
             <span id="modalShelter" class="inline-block bg-amber-400 text-amber-950 px-4 py-1 rounded-full text-[11px] font-black uppercase tracking-wider shadow-lg">
-                ศูนย์เทศบาลฯ
+                ศูนย์เทศบาลตำบลตันหยงมัส/บาลูกา
             </span>
         </div>
 
@@ -315,9 +316,9 @@
         <div class="relative">
             <select id="regis_shelter" class="w-full p-3.5 border border-blue-100 bg-blue-50 rounded-2xl outline-none appearance-none focus:ring-2 focus:ring-blue-400 transition-all font-bold text-blue-900" required>
                 <option value="" disabled selected>กรุณาเลือกศูนย์พักพิง</option>
-                <option value="ศูนย์เทศบาลฯ">ศูนย์เทศบาลตำบลตันหยงมัส</option>
+                <option value="ศูนย์เทศบาลตำบลตันหยงมัส/บาลูกาฯ">ศูนย์เทศบาลตำบลตันหยงมัส</option>
                 <option value="ศูนย์มัสยิดตันหยงมัส">ศูนย์มัสยิดตันหยงมัส</option>
-                <option value="ศูนย์โรงเรียนเขาพระ">ศูนย์โรงเรียนเขาพระ</option>
+                <option value="ศูนย์โรงเรียนบ้านเขาพระ">ศูนย์โรงเรียนบ้านเขาพระ</option>
             </select>
             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-blue-400">
                 <i class="fas fa-chevron-down text-xs"></i>
@@ -400,7 +401,7 @@
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbwahktsrfbMuVu4oIP2ChrGVsjiGhuGFQWBdnfTitRRRQy5P_ONiRYUUVpsbzh57bFy/exec";
-        const LOOKER_URL = "https://lookerstudio.google.com/embed/reporting/your_id_here";
+        const LOOKER_URL = "https://lookerstudio.google.com/embed/reporting/e87384f5-54c2-4bb3-b838-b9927c696f34/page/p_nqf5i1oswd";
         
         let store = { waterPoints:[], waterLevels:[] };
         let currentUser = "";
@@ -430,7 +431,7 @@
             const activeMobile = document.querySelector(`.mobile-nav-btn[data-page="${pageId}"]`);
             if(activeMobile) activeMobile.classList.add('active-menu-mobile');
             
-            const titles = { water:'สถานการณ์น้ำปัจจุบัน', addWater:'ส่งรายงานระดับน้ำ', shelter:'สถิติศูนย์พักพิง', regis:'ลงทะเบียนผู้ประสบภัย', looker:'Looker Studio' };
+            const titles = { water:'สถานการณ์ระดับน้ำ', addWater:'รายงานสถานการณ์ระดับน้ำ', shelter:'ศูนย์พักพิง', regis:'ลงทะเบียนศูนย์พักพิง', looker:'รายงานข้อมูลน้ำท่วม' };
             document.getElementById('pageTitle').innerText = titles[pageId];
             if(pageId === 'looker') document.getElementById('lookerFrame').src = LOOKER_URL;
             
@@ -674,9 +675,9 @@ function filterShelter(centerName) {
 
 // กำหนดความจุของแต่ละศูนย์
 const SHELTER_CAPACITY = {
-    'ศูนย์เทศบาลฯ': 80,
+    'ศูนย์เทศบาลตำบลตันหยงมัส/บาลูกา': 80,
     'ศูนย์มัสยิดตันหยงมัส': 80,
-    'ศูนย์โรงเรียนเขาพระ': 60
+    'ศูนย์โรงเรียนบ้านเขาพระ': 60
 };
 
 // ฟังก์ชันหลักในการเรนเดอร์สถิติและกราฟ
@@ -1018,3 +1019,4 @@ function toggleHealthNote(val) {
     </script>
 </body>
 </html>
+
