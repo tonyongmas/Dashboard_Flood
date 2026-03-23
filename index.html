@@ -384,7 +384,32 @@
             </div>
         </div>
     </div>
-
+    <div id="stockModal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity opacity-0 duration-300">
+    <div class="bg-white rounded-[2rem] w-full max-w-sm overflow-hidden shadow-2xl scale-95 transition-transform duration-300">
+        <div class="p-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+            <h3 class="font-black text-slate-800"><i class="fas fa-boxes mr-2 text-blue-500"></i>บันทึกรับเข้า/จ่ายออก</h3>
+            <button onclick="closeStockModal()" class="text-slate-400 hover:text-red-500 transition-colors"><i class="fas fa-times-circle text-xl"></i></button>
+        </div>
+        <form id="stockForm" onsubmit="saveStock(event)" class="p-6 space-y-4">
+            <div>
+                <label class="text-[10px] font-bold text-slate-400 uppercase">ประเภท</label>
+                <select id="stock_type" class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl outline-none font-bold text-slate-700 mt-1" required>
+                    <option value="in">รับของเข้าสต๊อก (+)</option>
+                    <option value="out">ปรับลดยอดสต๊อก (-)</option>
+                </select>
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-slate-400 uppercase">จำนวน (ถุง)</label>
+                <input type="number" id="stock_amount" min="1" class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl outline-none font-black text-xl text-slate-700 mt-1" required placeholder="0">
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-slate-400 uppercase">หมายเหตุ (แหล่งที่มา/เหตุผล)</label>
+                <input type="text" id="stock_note" class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl outline-none text-sm mt-1" placeholder="เช่น รับบริจาคจาก..., ของชำรุด">
+            </div>
+            <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all mt-4">บันทึกสต๊อก</button>
+        </form>
+    </div>
+</div>
     <div class="flex flex-col sm:flex-row gap-3 flex-1 lg:max-w-2xl">
         <div class="relative flex-1 group">
             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -407,7 +432,94 @@
         </button>
     </div>
 </div>
+        <div class="bg-white rounded-[2rem] p-6 border border-slate-200 shadow-sm mb-6 relative overflow-hidden">
+    <div class="absolute -right-10 -top-10 text-slate-50 opacity-50 pointer-events-none">
+        <i class="fas fa-boxes-stacked text-[150px]"></i>
+    </div>
+    
+    <div class="flex justify-between items-center mb-5 relative z-10">
+        <div>
+            <h3 class="font-black text-slate-800 text-lg flex items-center tracking-tight">
+                <i class="fas fa-warehouse text-blue-500 mr-2"></i> คลังถุงยังชีพ
+            </h3>
+            <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">Inventory Management</p>
+        </div>
+        <button id="adminStockBtn" onclick="openStockModal()" class="flex bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all shadow-md active:scale-95 items-center">
+    <i class="fas fa-plus-minus mr-2"></i> จัดการสต๊อก
+</button>
+    </div>
 
+    <div class="grid grid-cols-3 gap-3 relative z-10">
+        <div class="bg-blue-50/50 rounded-2xl p-4 border border-blue-100 flex flex-col justify-center">
+            <p class="text-[10px] font-bold text-blue-500 uppercase tracking-wider mb-1">รับเข้าทั้งหมด (In)</p>
+            <p id="stockInCount" class="text-3xl font-black text-blue-700">0</p>
+        </div>
+        <div class="bg-rose-50/50 rounded-2xl p-4 border border-rose-100 flex flex-col justify-center">
+            <p class="text-[10px] font-bold text-rose-500 uppercase tracking-wider mb-1">จ่ายออก (Out)</p>
+            <p id="stockOutCount" class="text-3xl font-black text-rose-700">0</p>
+        </div>
+        <div class="bg-emerald-50 rounded-2xl p-4 border border-emerald-200 shadow-sm flex flex-col justify-center transform scale-105">
+            <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-1">คงเหลือ (Balance)</p>
+            <p id="stockRemainCount" class="text-4xl font-black text-emerald-600">0</p>
+        </div>
+    </div>
+</div>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+    <div class="bg-white border-l-4 border-blue-400 rounded-xl p-3 shadow-sm flex flex-col justify-between">
+        <div>
+            <span class="text-[10px] font-black text-blue-500 uppercase tracking-wider">Zone 1</span>
+            <p class="text-[11px] font-bold text-slate-600 leading-tight mt-0.5 line-clamp-1">ชุมชนตลาดกลางผลไม้</p>
+        </div>
+        <div class="mt-2 flex items-end justify-between">
+            <span id="zone1Count" class="text-2xl font-black text-slate-800 leading-none">0</span>
+            <i class="fas fa-map-marker-alt text-blue-100 text-lg"></i>
+        </div>
+    </div>
+
+    <div class="bg-white border-l-4 border-amber-400 rounded-xl p-3 shadow-sm flex flex-col justify-between">
+        <div>
+            <span class="text-[10px] font-black text-amber-500 uppercase tracking-wider">Zone 2</span>
+            <p class="text-[11px] font-bold text-slate-600 leading-tight mt-0.5 line-clamp-1">หลังสระรพช</p>
+        </div>
+        <div class="mt-2 flex items-end justify-between">
+            <span id="zone2Count" class="text-2xl font-black text-slate-800 leading-none">0</span>
+            <i class="fas fa-map-marker-alt text-emerald-100 text-lg"></i>
+        </div>
+    </div>
+
+    <div class="bg-white border-l-4 border-rose-400 rounded-xl p-3 shadow-sm flex flex-col justify-between">
+        <div>
+            <span class="text-[10px] font-black text-rose-500 uppercase tracking-wider">Zone 3</span>
+            <p class="text-[11px] font-bold text-slate-600 leading-tight mt-0.5 line-clamp-1">เขาพระ-โรงฆ่าสัตว์</p>
+        </div>
+        <div class="mt-2 flex items-end justify-between">
+            <span id="zone3Count" class="text-2xl font-black text-slate-800 leading-none">0</span>
+            <i class="fas fa-map-marker-alt text-rose-100 text-lg"></i>
+        </div>
+    </div>
+
+    <div class="bg-white border-l-4 border-emerald-400 rounded-xl p-3 shadow-sm flex flex-col justify-between">
+        <div>
+            <span class="text-[10px] font-black text-emerald-500 uppercase tracking-wider">Zone 4</span>
+            <p class="text-[11px] font-bold text-slate-600 leading-tight mt-0.5 line-clamp-1">ดารุสสลาม-สุขาภิบาล</p>
+        </div>
+        <div class="mt-2 flex items-end justify-between">
+            <span id="zone4Count" class="text-2xl font-black text-slate-800 leading-none">0</span>
+            <i class="fas fa-map-marker-alt text-emerald-100 text-lg"></i>
+        </div>
+    </div>
+
+    <div class="bg-white border-l-4 border-purple-400 rounded-xl p-3 shadow-sm flex flex-col justify-between">
+        <div>
+            <span class="text-[10px] font-black text-purple-500 uppercase tracking-wider">Zone 5</span>
+            <p class="text-[11px] font-bold text-slate-600 leading-tight mt-0.5 line-clamp-1">บาลูกา</p>
+        </div>
+        <div class="mt-2 flex items-end justify-between">
+            <span id="zone5Count" class="text-2xl font-black text-slate-800 leading-none">0</span>
+            <i class="fas fa-map-marker-alt text-purple-100 text-lg"></i>
+        </div>
+    </div>
+</div>
     <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden transition-all">
         <div class="overflow-x-auto overflow-y-auto max-h-[650px] custom-scrollbar">
             <table class="w-full text-left border-collapse min-w-[750px]">
@@ -618,7 +730,7 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbwahktsrfbMuVu4oIP2ChrGVsjiGhuGFQWBdnfTitRRRQy5P_ONiRYUUVpsbzh57bFy/exec";
         const LOOKER_URL = "https://lookerstudio.google.com/embed/reporting/e87384f5-54c2-4bb3-b838-b9927c696f34/page/p_nqf5i1oswd";
         
-        let store = { waterPoints:[], waterLevels:[] };
+        let store = { waterPoints:[], waterLevels:[], reliefStock: [] };
         let currentUser = "";
         let userRole = ""; // เพิ่มตัวแปรเก็บสิทธิ์
         let waterChartInstance = null;
@@ -713,6 +825,8 @@ function showPage(pageId) {
             // จัดการซ่อน/แสดงเมนูตามสิทธิ์
             updateMenuByRole();
             
+            
+            
             // นำทางไปหน้าแรกที่เหมาะสม
             let firstPage = 'water'; // ค่าเริ่มต้น
                 if (userRole === 'shelter') firstPage = 'shelter';
@@ -748,6 +862,7 @@ function showPage(pageId) {
         if(userRole === 'admin') adminBtn.classList.remove('hidden'); 
     }
 }
+
 
         async function loadData() {
     try {
@@ -788,6 +903,7 @@ function showPage(pageId) {
         // 3. ประมวลผลตารางข้อมูลผู้รับถุงยังชีพ
         if (store.reliefData) {
                 renderReliefTable(store.reliefData);
+                renderStockDashboard();
             }
 
         // 4. ประมวลผลหน้าศูนย์พักพิง (สถิติ + กราฟวงกลม + รายชื่อ)
@@ -854,14 +970,117 @@ function showPage(pageId) {
             }
         }
 
-        function renderReliefTable(data, isSearching = false) {
+            // 1. ฟังก์ชันคำนวณสต๊อก
+function renderStockDashboard() {
+    if (!store.reliefStock) return;
+
+    let totalIn = 0;
+    let totalOut = 0;
+
+    // วนลูปอ่านค่าจากแท็บ ReliefStock โดยตรง
+    store.reliefStock.forEach(r => {
+        const type = r[1] ? r[1].toString().toLowerCase() : '';
+        const amount = Number(r[2]) || 0;
+        
+        if (type === 'in') totalIn += amount;
+        if (type === 'out') totalOut += amount; // รวมทั้งที่ตัดอัตโนมัติและคีย์เอง
+    });
+
+    const remain = totalIn - totalOut;
+
+    // อัปเดตตัวเลขขึ้นหน้าจอ
+    if(document.getElementById('stockInCount')) document.getElementById('stockInCount').innerText = totalIn;
+    if(document.getElementById('stockOutCount')) document.getElementById('stockOutCount').innerText = totalOut;
+    if(document.getElementById('stockRemainCount')) document.getElementById('stockRemainCount').innerText = remain;
+}
+    // 3. ฟังก์ชันเปิด-ปิด Modal
+function openStockModal() {
+    const modal = document.getElementById('stockModal');
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modal.querySelector('.bg-white').classList.remove('scale-95');
+    }, 10);
+}
+
+function closeStockModal() {
+    const modal = document.getElementById('stockModal');
+    modal.classList.add('opacity-0');
+    modal.querySelector('.bg-white').classList.add('scale-95');
+    setTimeout(() => { modal.classList.add('hidden'); }, 300);
+}
+
+// 4. บันทึกข้อมูลสต๊อก
+async function saveStock(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button');
+    btn.innerText = "กำลังบันทึก..."; btn.disabled = true;
+
+    const payload = {
+        action: 'saveStock',
+        type: document.getElementById('stock_type').value,
+        amount: document.getElementById('stock_amount').value,
+        note: document.getElementById('stock_note').value,
+        user: currentUser
+    };
+
+    try {
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const data = await res.json();
+        if (data.success) {
+            Swal.fire('สำเร็จ', 'อัปเดตสต๊อกเรียบร้อยแล้ว', 'success');
+            document.getElementById('stockForm').reset();
+            closeStockModal();
+            loadData(); // โหลดข้อมูลใหม่เพื่อคำนวณยอด
+        }
+    } catch (err) { Swal.fire('ผิดพลาด', 'บันทึกไม่สำเร็จ', 'error'); }
+    btn.innerText = "บันทึกสต๊อก"; btn.disabled = false;
+}
+
+
+    // --- กฎเกณฑ์การแยก Zone ตามชื่อถนน ---
+const zoneRules = {
+    zone1: ['ถนนประชาสามัคคี', 'ถนนระแงะมรรคา', 'ถนนระแงะมรรรคา 1', 'ถนนระแงะมรรคา 2', 'ถนนระแงะมรรคา 3', 'ถนนระแงะมรรคา 4', 'ถนนระแงะมรรคา 5', 'ถนนระแงะมรรคา 6', 'ถนนมะรือโบ-บ่อทอง', 'ถนนลานไทร ซอย 1'],
+    zone2: ['ถนนลานไทร ซอย 3'],
+    zone3: ['ถนนเทศบาล 12', 'ถนนเทศบาล 15', 'ถนนเทศบาล 15 ซอย 1', 'ถนนเทศบาล 15 ซอย 2', 'ถนนเทศบาล 15 ซอย 2/1'],
+    zone4: ['ถนนเทศบาล 8 ซอย 2', 'ถนนเทศบาล 8', 'ถนนเทศบาล 11 ซอย 1', 'ถนนเทศบาล 11 ซอย 3', 'ถนนเทศบาล 11 ซอย 5'],
+    zone5: ['ถนนเทศบาล 17', 'ถนนเทศบาล 17 ซอย 1ก', 'ถนนเทศบาล 17 ซอย 3', 'ถนนพระยาระแงะ ซอย 3']
+};
+
+function renderReliefTable(data, isSearching = false) {
     const tableBody = document.getElementById('reliefTableBody');
     if (!tableBody) return;
 
-    // อัปเดตตัวเลขรวมทั้งหมด (ถ้ากำลังค้นหาให้แสดงยอดตามผลการค้นหา)
+    // 1. กำหนดข้อมูลที่จะนำมาใช้นับสรุป (รวมทั้งหมด หรือ เฉพาะที่ค้นหา)
     const summaryData = isSearching ? data : (store.reliefData || []);
-    document.getElementById('totalReliefCount').innerText = summaryData.length;
+    
+    // อัปเดตยอดรวมทั้งหมด
+    if (document.getElementById('totalReliefCount')) {
+        document.getElementById('totalReliefCount').innerText = summaryData.length;
+    }
 
+    // 2. ตัวแปรเก็บจำนวนของแต่ละ Zone
+    let counts = { zone1: 0, zone2: 0, zone3: 0, zone4: 0, zone5: 0 };
+
+    // 3. วนลูปเช็คที่อยู่ (สมมติว่าที่อยู่เก็บในช่อง r[4])
+    summaryData.forEach(r => {
+        const address = r[4] ? r[4].toString() : '';
+        
+        if (zoneRules.zone1.some(street => address.includes(street))) counts.zone1++;
+        else if (zoneRules.zone2.some(street => address.includes(street))) counts.zone2++;
+        else if (zoneRules.zone3.some(street => address.includes(street))) counts.zone3++;
+        else if (zoneRules.zone4.some(street => address.includes(street))) counts.zone4++;
+        else if (zoneRules.zone5.some(street => address.includes(street))) counts.zone5++;
+    });
+
+    // 4. แสดงผลตัวเลขขึ้นการ์ด
+    if(document.getElementById('zone1Count')) document.getElementById('zone1Count').innerText = counts.zone1;
+    if(document.getElementById('zone2Count')) document.getElementById('zone2Count').innerText = counts.zone2;
+    if(document.getElementById('zone3Count')) document.getElementById('zone3Count').innerText = counts.zone3;
+    if(document.getElementById('zone4Count')) document.getElementById('zone4Count').innerText = counts.zone4;
+    if(document.getElementById('zone5Count')) document.getElementById('zone5Count').innerText = counts.zone5;
+
+    // --- ส่วนตารางด้านล่าง ---
     if (!data || data.length === 0) {
         tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-20 text-slate-400 font-bold"><i class="fas fa-search-minus text-3xl mb-3 block opacity-20"></i>ไม่พบข้อมูล</td></tr>`;
         return;
@@ -871,7 +1090,7 @@ function showPage(pageId) {
 
     tableBody.innerHTML = displayData.map((r, index) => {
         const timestamp = r[0] ? new Date(r[0]).toLocaleString('th-TH', { day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-';
-        const statusClass = r[2] === 'เจ้าบ้าน' ? 'bg-green-50 text-green-600 border-green-100' : 'bg-amber-50 text-amber-600 border-amber-100';
+        const statusClass = r[2] === 'ปกติ' ? 'bg-green-50 text-green-600 border-green-100' : 'bg-amber-50 text-amber-600 border-amber-100';
         
         return `
             <tr class="hover:bg-slate-50 transition-colors">
@@ -1551,4 +1770,3 @@ function closeLightbox() {
     </script>
 </body>
 </html>
-
