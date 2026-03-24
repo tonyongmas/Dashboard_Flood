@@ -9,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap');
@@ -432,6 +433,38 @@
         </button>
     </div>
 </div>
+    <div id="reliefChoiceModal" class="hidden fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity opacity-0 duration-300">
+    <div class="bg-white rounded-[2rem] w-full max-w-md overflow-hidden shadow-2xl scale-95 transition-transform duration-300">
+        <div class="p-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+            <h3 class="font-black text-slate-800"><i class="fas fa-hand-holding-heart mr-2 text-amber-500"></i>เพิ่มข้อมูลผู้รับถุงยังชีพ</h3>
+            <button onclick="closeReliefChoice()" class="text-slate-400 hover:text-red-500 transition-colors"><i class="fas fa-times-circle text-xl"></i></button>
+        </div>
+        <div class="p-6 grid grid-cols-2 gap-4">
+            <button onclick="document.getElementById('ocrInput').click()" class="flex flex-col items-center justify-center p-6 bg-blue-50 border-2 border-blue-100 rounded-2xl hover:bg-blue-100 hover:border-blue-300 transition-all group">
+                <i class="fas fa-id-card text-4xl text-blue-500 mb-3 group-hover:scale-110 transition-transform"></i>
+                <span class="font-black text-blue-800 text-sm">สแกนบัตร (OCR)</span>
+                <span class="text-[9px] text-blue-600 mt-1 text-center">ดึงชื่อและที่อยู่อัตโนมัติ</span>
+            </button>
+            
+            <button onclick="startManualRelief()" class="flex flex-col items-center justify-center p-6 bg-amber-50 border-2 border-amber-100 rounded-2xl hover:bg-amber-100 hover:border-amber-300 transition-all group">
+                <i class="fas fa-keyboard text-4xl text-amber-500 mb-3 group-hover:scale-110 transition-transform"></i>
+                <span class="font-black text-amber-800 text-sm">พิมพ์ข้อมูลเอง</span>
+                <span class="text-[9px] text-amber-600 mt-1 text-center">กรอกข้อมูลด้วยตนเอง</span>
+            </button>
+        </div>
+        
+        <input type="file" id="ocrInput" accept="image/*" capture="environment" class="hidden" onchange="handleOCRUpload(event)">
+    </div>
+</div>
+
+<div id="ocrLoading" class="hidden fixed inset-0 z-[70] bg-slate-900/80 flex flex-col items-center justify-center text-white backdrop-blur-sm">
+    <i class="fas fa-id-card-clip text-5xl mb-4 animate-bounce text-blue-400"></i>
+    <h3 class="text-xl font-black mb-2">กำลังอ่านข้อมูลบนบัตร...</h3>
+    <p class="text-sm text-slate-300 mb-4">อาจใช้เวลา 5-10 วินาที โปรดรอสักครู่</p>
+    <div class="w-64 bg-slate-700 rounded-full h-2.5 overflow-hidden">
+        <div id="ocrProgress" class="bg-blue-500 h-2.5 w-0 transition-all duration-300"></div>
+    </div>
+</div>
         <div class="bg-white rounded-[2rem] p-6 border border-slate-200 shadow-sm mb-6 relative overflow-hidden">
     <div class="absolute -right-10 -top-10 text-slate-50 opacity-50 pointer-events-none">
         <i class="fas fa-boxes-stacked text-[150px]"></i>
@@ -479,7 +512,7 @@
     <div class="bg-white border-l-4 border-amber-400 rounded-xl p-3 shadow-sm flex flex-col justify-between">
         <div>
             <span class="text-[10px] font-black text-amber-500 uppercase tracking-wider">Zone 2</span>
-            <p class="text-[11px] font-bold text-slate-600 leading-tight mt-0.5 line-clamp-1">หลังสระรพช</p>
+            <p class="text-[11px] font-bold text-slate-600 leading-tight mt-0.5 line-clamp-1">หลังสระรพช-ตรอ</p>
         </div>
         <div class="mt-2 flex items-end justify-between">
             <span id="zone2Count" class="text-2xl font-black text-slate-800 leading-none">0</span>
@@ -734,6 +767,8 @@
         let currentUser = "";
         let userRole = ""; // เพิ่มตัวแปรเก็บสิทธิ์
         let waterChartInstance = null;
+        // ประกาศตัวแปร Global ไว้ด้านบนสุดของ <script>
+        let tesseractWorker = null;
 
         // กำหนดว่าแต่ละสิทธิ์เข้าหน้าไหนได้บ้าง
         const PAGE_ACCESS = {
@@ -938,8 +973,200 @@ function showPage(pageId) {
         relAddrSelect.innerHTML = addrOpts;
     }
 }
+// ฟังก์ชันเตรียมความพร้อม OCR (เรียกใช้ตอน window.onload หรือหลัง Login)
+async function initOCR() {
+    if (tesseractWorker) return;
+    tesseractWorker = await Tesseract.createWorker({
+        logger: m => {
+            if (m.status === 'recognizing text') {
+                const progress = document.getElementById('ocrProgress');
+                if(progress) progress.style.width = (m.progress * 100) + '%';
+            }
+        }
+    });
+    await tesseractWorker.loadLanguage('tha');
+    await tesseractWorker.initialize('tha');
+    console.log("OCR System Ready");
+}
+        // 1. เปลี่ยนการทำงานของปุ่ม "บันทึกการแจก" ให้เปิดหน้าต่างเลือกแทน
+function openReliefModal() {
+    // ปิดหน้าต่างเลือกก่อน (ถ้าเปิดอยู่) แล้วแสดงหน้าต่างเลือกใหม่
+    const choiceModal = document.getElementById('reliefChoiceModal');
+    choiceModal.classList.remove('hidden');
+    setTimeout(() => {
+        choiceModal.classList.remove('opacity-0');
+        choiceModal.querySelector('.bg-white').classList.remove('scale-95');
+    }, 10);
+}
 
-        function openReliefModal() { document.getElementById('reliefModal').classList.remove('hidden'); }
+function closeReliefChoice() {
+    const choiceModal = document.getElementById('reliefChoiceModal');
+    choiceModal.classList.add('opacity-0');
+    choiceModal.querySelector('.bg-white').classList.add('scale-95');
+    setTimeout(() => { choiceModal.classList.add('hidden'); }, 300);
+}
+
+// 2. ถ้าเลือก "พิมพ์ข้อมูลเอง"
+function startManualRelief() {
+    closeReliefChoice();
+    // รีเซ็ตฟอร์มให้ว่างเปล่า
+    document.getElementById('reliefForm').reset();
+    // เปิดฟอร์มบันทึกถุงยังชีพเดิมของคุณ (สมมติว่าชื่อหน้าต่างคือ modal เดิม)
+    // ตรงนี้ให้ใช้ฟังก์ชันเปิดฟอร์มถุงยังชีพเดิมของคุณ เช่น openReliefFormModal() หรือโค้ดเดิมที่เคยใช้
+    document.getElementById('reliefModal').classList.remove('hidden'); // ปรับ id ให้ตรงกับฟอร์มเดิมของคุณ
+}
+
+// จัดการเมื่ออัปโหลดรูปภาพบัตรประชาชน (พร้อมระบบจับเวลา 15 วินาที)
+async function handleOCRUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    closeReliefChoice();
+    const loading = document.getElementById('ocrLoading');
+    loading.classList.remove('hidden');
+
+    // เตรียมความพร้อม Worker (ถ้ายังไม่โหลด)
+    if (!tesseractWorker) await initOCR();
+
+    try {
+        // --- ส่วนการจับเวลา (Timeout) ---
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error("TIMEOUT")), 15000);
+        });
+
+        // --- ส่วนการอ่านข้อมูล (OCR) ---
+        const recognizePromise = (async () => {
+            // *** ขั้นตอนใหม่: ย่อขนาดรูปภาพก่อนส่งให้ OCR ***
+            const resizedBlob = await resizeImage(file, 1000); 
+            
+            // ส่งภาพที่ย่อแล้วให้ Tesseract
+            const { data: { text } } = await tesseractWorker.recognize(resizedBlob);
+            return text;
+        })();
+
+        // แข่งกันระหว่างการอ่าน กับ ตัวจับเวลา 15 วินาที
+        const text = await Promise.race([recognizePromise, timeoutPromise]);
+
+        loading.classList.add('hidden');
+        extractDataFromOCR(text);
+
+    } catch (error) {
+        loading.classList.add('hidden');
+        console.error("OCR Error:", error);
+
+        if (error.message === "TIMEOUT") {
+            Swal.fire({
+                title: 'ไม่สามารถอ่านได้',
+                text: 'การประมวลผลนานเกิน 15 วินาที อาจเป็นเพราะภาพไม่ชัด กรุณาถ่ายใหม่ในที่สว่างและเห็นตัวอักษรชัดเจน',
+                icon: 'warning',
+                confirmButtonText: 'ตกลง'
+            }).then(() => openReliefModal());
+        } else {
+            Swal.fire('เกิดข้อผิดพลาด', 'ระบบสแกนขัดข้อง กรุณาพิมพ์ข้อมูลด้วยตนเอง', 'error');
+            startManualRelief();
+        }
+    } finally {
+        event.target.value = '';
+    }
+}
+/**
+ * ฟังก์ชันย่อขนาดรูปภาพอัตโนมัติ
+ * @param {File} file - ไฟล์รูปภาพต้นฉบับ
+ * @param {number} maxWidth - ความกว้างสูงสุดที่ต้องการ (แนะนำ 1000px)
+ * @returns {Promise<Blob>} - รูปภาพที่ย่อขนาดแล้ว
+ */
+function resizeImage(file, maxWidth = 1000) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                // คำนวณสัดส่วนใหม่ถ้าภาพกว้างกว่า maxWidth
+                if (width > maxWidth) {
+                    height = (maxWidth / width) * height;
+                    width = maxWidth;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                
+                // วาดรูปลง Canvas (เป็นการบีบอัดและย่อขนาด)
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                // ส่งกลับเป็น Blob (Format JPEG เพื่อขนาดไฟล์ที่เล็กที่สุด)
+                canvas.toBlob((blob) => {
+                    resolve(blob);
+                }, 'image/jpeg', 0.8); // คุณภาพ 80% เพียงพอสำหรับ OCR
+            };
+            img.onerror = reject;
+        };
+        reader.onerror = reject;
+    });
+}
+// 4. แยกชื่อและที่อยู่จากข้อความดิบ (Regex Logic)
+function extractDataFromOCR(rawText) {
+    // ลบช่องว่างที่มากเกินไปและทำความสะอาดข้อความ
+    const text = rawText.replace(/\n+/g, ' ').replace(/\s+/g, ' ').trim();
+    
+    let extractedName = "";
+    let extractedAddress = "";
+
+    // 1. หาชื่อ-สกุล (มองหาคำนำหน้า)
+    const nameRegex = /(นาย|นาง|นางสาว|ด\.ช\.|ด\.ญ\.)\s*([ก-๙]+)\s+([ก-๙]+)/;
+    const nameMatch = text.match(nameRegex);
+    if (nameMatch) {
+        extractedName = nameMatch[0].trim();
+    }
+
+    // 2. หาที่อยู่ (มองหาคำว่า ที่อยู่ หรือ หมู่ที่)
+    // ตัดเอาข้อความตั้งแต่คำว่า "ที่อยู่" หรือรูปแบบบ้านเลขที่ ไปจนจบหรือเจอคำอื่นที่ไม่เกี่ยว
+    const addressRegex = /(?:ที่อยู่|ที่อ|ยู่)\s*([\d\/\sหมู่ที่ตำบลอำเภอจังหวัด]+[ก-๙]*)/;
+    const addressMatch = text.match(addressRegex);
+    if (addressMatch) {
+        extractedAddress = addressMatch[1].trim();
+    } else {
+        // ลองหาแค่บ้านเลขที่เผื่อคำว่าที่อยู่เบลอ
+        const fallbackAddrRegex = /(\d+\/\d+\s*หมู่ที่\s*\d+\s*[ก-๙\s]+)/;
+        const fallbackMatch = text.match(fallbackAddrRegex);
+        if (fallbackMatch) extractedAddress = fallbackMatch[1].trim();
+    }
+
+    // 3. เปิดฟอร์มและใส่ข้อมูลลงไปให้เจ้าหน้าที่ "ตรวจสอบความถูกต้อง"
+    document.getElementById('reliefForm').reset();
+    
+    // **หมายเหตุ: เปลี่ยน ID ด้านล่างให้ตรงกับ Input ในฟอร์มของคุณ**
+    const nameInput = document.getElementById('relief_name'); // สมมติ id ของช่องชื่อ
+    const addrInput = document.getElementById('relief_address'); // สมมติ id ของช่องที่อยู่
+    
+    if (nameInput) nameInput.value = extractedName;
+    if (addrInput && extractedAddress) {
+        // คุณอาจจะต้องแยก Address หรือเอาไปใส่ในช่องที่กำหนด
+        // กรณีถ้าเป็น dropdown ให้ใส่แบบนี้ไม่ได้ ต้องให้ user เลือกเอง
+        // แต่ถ้าเป็น Text input ใส่ได้เลย
+        if (addrInput.tagName === 'INPUT' || addrInput.tagName === 'TEXTAREA') {
+            addrInput.value = extractedAddress;
+        }
+    }
+
+    // แจ้งเตือนให้ตรวจสอบ
+    Swal.fire({
+        title: 'สแกนสำเร็จ!',
+        text: 'ระบบดึงข้อมูลมาแล้ว กรุณา "ตรวจสอบและแก้ไข" ให้ถูกต้องก่อนบันทึกเสมอ',
+        icon: 'info',
+        confirmButtonText: 'รับทราบ'
+    });
+
+    // เปิดหน้าฟอร์ม
+    document.getElementById('reliefModal').classList.remove('hidden');
+}
+        
         function closeReliefModal() { document.getElementById('reliefModal').classList.add('hidden'); }
         function toggleRelOtherAddr(val) { document.getElementById('rel_address_other').classList.toggle('hidden', val !== 'other'); }
         function copyAddress(isChecked) {
@@ -1040,8 +1267,8 @@ async function saveStock(e) {
 
     // --- กฎเกณฑ์การแยก Zone ตามชื่อถนน ---
 const zoneRules = {
-    zone1: ['ถนนประชาสามัคคี', 'ถนนระแงะมรรคา', 'ถนนระแงะมรรรคา 1', 'ถนนระแงะมรรคา 2', 'ถนนระแงะมรรคา 3', 'ถนนระแงะมรรคา 4', 'ถนนระแงะมรรคา 5', 'ถนนระแงะมรรคา 6', 'ถนนมะรือโบ-บ่อทอง', 'ถนนลานไทร ซอย 1'],
-    zone2: ['ถนนลานไทร ซอย 3'],
+    zone1: ['ถนนประชาสามัคคี', 'ถนนระแงะมรรคา', 'ถนนระแงะมรรคา 1', 'ถนนระแงะมรรคา 2', 'ถนนระแงะมรรคา 3', 'ถนนระแงะมรรคา 4', 'ถนนระแงะมรรคา 5', 'ถนนระแงะมรรคา 6', 'ถนนมะรือโบ-บ่อทอง', 'ถนนลานไทร ซอย 1'],
+    zone2: ['ถนนลานไทร ซอย 3', 'ถนนระแงะมรรคา 19'], // <--- เพิ่มข้อมูลแล้ว
     zone3: ['ถนนเทศบาล 12', 'ถนนเทศบาล 15', 'ถนนเทศบาล 15 ซอย 1', 'ถนนเทศบาล 15 ซอย 2', 'ถนนเทศบาล 15 ซอย 2/1'],
     zone4: ['ถนนเทศบาล 8 ซอย 2', 'ถนนเทศบาล 8', 'ถนนเทศบาล 11 ซอย 1', 'ถนนเทศบาล 11 ซอย 3', 'ถนนเทศบาล 11 ซอย 5'],
     zone5: ['ถนนเทศบาล 17', 'ถนนเทศบาล 17 ซอย 1ก', 'ถนนเทศบาล 17 ซอย 3', 'ถนนพระยาระแงะ ซอย 3']
@@ -1062,15 +1289,17 @@ function renderReliefTable(data, isSearching = false) {
     // 2. ตัวแปรเก็บจำนวนของแต่ละ Zone
     let counts = { zone1: 0, zone2: 0, zone3: 0, zone4: 0, zone5: 0 };
 
-    // 3. วนลูปเช็คที่อยู่ (สมมติว่าที่อยู่เก็บในช่อง r[4])
+    // 3. วนลูปเช็คที่อยู่ (แก้ไขลำดับเพื่อป้องกันชื่อถนนทับซ้อนกัน)
     summaryData.forEach(r => {
         const address = r[4] ? r[4].toString() : '';
         
-        if (zoneRules.zone1.some(street => address.includes(street))) counts.zone1++;
-        else if (zoneRules.zone2.some(street => address.includes(street))) counts.zone2++;
+        // ย้าย Zone 2, 3, 4, 5 ขึ้นมาเช็คก่อน
+        if (zoneRules.zone2.some(street => address.includes(street))) counts.zone2++;
         else if (zoneRules.zone3.some(street => address.includes(street))) counts.zone3++;
         else if (zoneRules.zone4.some(street => address.includes(street))) counts.zone4++;
         else if (zoneRules.zone5.some(street => address.includes(street))) counts.zone5++;
+        // ให้ Zone 1 ที่มีชื่อถนนสั้นๆ (คำตั้งต้น) อยู่ลำดับสุดท้าย
+        else if (zoneRules.zone1.some(street => address.includes(street))) counts.zone1++;
     });
 
     // 4. แสดงผลตัวเลขขึ้นการ์ด
