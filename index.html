@@ -740,9 +740,9 @@
         // กำหนดว่าแต่ละสิทธิ์เข้าหน้าไหนได้บ้าง
         const PAGE_ACCESS = {
         'admin': ['water', 'addWater', 'shelter', 'regis', 'relief', 'looker', 'userManagement'],
-        'shelter': ['shelter'],
-        'water_staff': ['water', 'addWater'], // <-- เพิ่มบรรทัดนี้
-        'relief': ['relief']
+        'shelter': ['shelter', 'looker'],
+        'water_staff': ['water', 'addWater', 'looker'], // <-- เพิ่มบรรทัดนี้
+        'relief': ['relief', 'looker']
         };
         // --- Navigation Logic ---
         function toggleSidebar() {
