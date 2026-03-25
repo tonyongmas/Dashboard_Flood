@@ -408,6 +408,27 @@
             </div>
             <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all mt-4">บันทึกสต๊อก</button>
         </form>
+        <div class="px-6 pb-6">
+    <div class="border-t border-slate-100 pt-4 mb-3">
+        <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">ประวัติการทำรายการล่าสุด</h4>
+    </div>
+    
+    <div class="overflow-y-auto pr-1 border border-slate-50 rounded-xl" style="max-height: 250px;">
+        <table class="w-full text-left border-collapse">
+            <thead class="sticky top-0 bg-white shadow-sm z-10">
+                <tr class="text-[9px] text-slate-400 font-bold uppercase border-b border-slate-100">
+                    <th class="p-2 w-1/4">วัน/เวลา</th>
+                    <th class="p-2 text-center w-1/4">ประเภท</th>
+                    <th class="p-2 text-right w-1/6">จำนวน</th>
+                    <th class="p-2 text-right w-1/3">หมายเหตุ</th>
+                </tr>
+            </thead>
+            <tbody id="stockTableBody" class="divide-y divide-slate-50">
+                <tr><td colspan="4" class="text-center py-10 text-slate-300 italic text-xs">กำลังโหลดข้อมูล...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
     </div>
 </div>
     <div class="flex flex-col sm:flex-row gap-3 flex-1 lg:max-w-2xl">
@@ -426,12 +447,12 @@
             </div>
         </div>
 
-        <button onclick="startManualRelief()" class="bg-blue-600 text-white px-6 py-3 rounded-2xl font-black shadow-lg shadow-blue-100 active:scale-95 transition-all flex items-center">
-    <i class="fas fa-plus-circle mr-2"></i> บันทึกการแจกถุงยังชีพ
-</button>
+        <button onclick="openReliefModal()" class="bg-amber-500 text-white px-8 py-4 rounded-[1.5rem] font-black shadow-lg shadow-amber-200 hover:bg-amber-600 transition-all active:scale-95 flex items-center justify-center whitespace-nowrap">
+            <i class="fas fa-plus-circle mr-2"></i>
+            บันทึกการแจกถุงยังชีพ
+        </button>
     </div>
 </div>
-
         <div class="bg-white rounded-[2rem] p-6 border border-slate-200 shadow-sm mb-6 relative overflow-hidden">
     <div class="absolute -right-10 -top-10 text-slate-50 opacity-50 pointer-events-none">
         <i class="fas fa-boxes-stacked text-[150px]"></i>
@@ -464,61 +485,67 @@
         </div>
     </div>
 </div>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
-    <div class="bg-white border-l-4 border-blue-400 rounded-xl p-3 shadow-sm flex flex-col justify-between">
+           <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+    <button onclick="filterByZone('zone1')" class="zone-filter-btn bg-white border-l-4 border-blue-400 rounded-xl p-3 shadow-sm flex flex-col justify-between text-left hover:bg-blue-50 transition-all active:scale-95 focus:ring-2 focus:ring-blue-200" id="btn-zone1">
         <div>
             <span class="text-[10px] font-black text-blue-500 uppercase tracking-wider">Zone 1</span>
             <p class="text-[11px] font-bold text-slate-600 leading-tight mt-0.5 line-clamp-1">ชุมชนตลาดกลางผลไม้</p>
         </div>
-        <div class="mt-2 flex items-end justify-between">
+        <div class="mt-2 flex items-end justify-between w-full">
             <span id="zone1Count" class="text-2xl font-black text-slate-800 leading-none">0</span>
             <i class="fas fa-map-marker-alt text-blue-100 text-lg"></i>
         </div>
-    </div>
+    </button>
 
-    <div class="bg-white border-l-4 border-amber-400 rounded-xl p-3 shadow-sm flex flex-col justify-between">
+    <button onclick="filterByZone('zone2')" class="zone-filter-btn bg-white border-l-4 border-amber-400 rounded-xl p-3 shadow-sm flex flex-col justify-between text-left hover:bg-emerald-50 transition-all active:scale-95 focus:ring-2 focus:ring-emerald-200" id="btn-zone2">
         <div>
             <span class="text-[10px] font-black text-amber-500 uppercase tracking-wider">Zone 2</span>
             <p class="text-[11px] font-bold text-slate-600 leading-tight mt-0.5 line-clamp-1">หลังสระรพช-ตรอ</p>
         </div>
-        <div class="mt-2 flex items-end justify-between">
+        <div class="mt-2 flex items-end justify-between w-full">
             <span id="zone2Count" class="text-2xl font-black text-slate-800 leading-none">0</span>
-            <i class="fas fa-map-marker-alt text-emerald-100 text-lg"></i>
+            <i class="fas fa-map-marker-alt text-amber-100 text-lg"></i>
         </div>
-    </div>
+    </button>
 
-    <div class="bg-white border-l-4 border-rose-400 rounded-xl p-3 shadow-sm flex flex-col justify-between">
+    <button onclick="filterByZone('zone3')" class="zone-filter-btn bg-white border-l-4 border-rose-400 rounded-xl p-3 shadow-sm flex flex-col justify-between text-left hover:bg-amber-50 transition-all active:scale-95 focus:ring-2 focus:ring-amber-200" id="btn-zone3">
         <div>
             <span class="text-[10px] font-black text-rose-500 uppercase tracking-wider">Zone 3</span>
             <p class="text-[11px] font-bold text-slate-600 leading-tight mt-0.5 line-clamp-1">เขาพระ-โรงฆ่าสัตว์</p>
         </div>
-        <div class="mt-2 flex items-end justify-between">
+        <div class="mt-2 flex items-end justify-between w-full">
             <span id="zone3Count" class="text-2xl font-black text-slate-800 leading-none">0</span>
             <i class="fas fa-map-marker-alt text-rose-100 text-lg"></i>
         </div>
-    </div>
+    </button>
 
-    <div class="bg-white border-l-4 border-emerald-400 rounded-xl p-3 shadow-sm flex flex-col justify-between">
+    <button onclick="filterByZone('zone4')" class="zone-filter-btn bg-white border-l-4 border-emerald-400 rounded-xl p-3 shadow-sm flex flex-col justify-between text-left hover:bg-purple-50 transition-all active:scale-95 focus:ring-2 focus:ring-purple-200" id="btn-zone4">
         <div>
             <span class="text-[10px] font-black text-emerald-500 uppercase tracking-wider">Zone 4</span>
             <p class="text-[11px] font-bold text-slate-600 leading-tight mt-0.5 line-clamp-1">ดารุสสลาม-สุขาภิบาล</p>
         </div>
-        <div class="mt-2 flex items-end justify-between">
+        <div class="mt-2 flex items-end justify-between w-full">
             <span id="zone4Count" class="text-2xl font-black text-slate-800 leading-none">0</span>
             <i class="fas fa-map-marker-alt text-emerald-100 text-lg"></i>
         </div>
-    </div>
+    </button>
 
-    <div class="bg-white border-l-4 border-purple-400 rounded-xl p-3 shadow-sm flex flex-col justify-between">
+    <button onclick="filterByZone('zone5')" class="zone-filter-btn bg-white border-l-4 border-purple-400 rounded-xl p-3 shadow-sm flex flex-col justify-between text-left hover:bg-rose-50 transition-all active:scale-95 focus:ring-2 focus:ring-rose-200" id="btn-zone5">
         <div>
             <span class="text-[10px] font-black text-purple-500 uppercase tracking-wider">Zone 5</span>
             <p class="text-[11px] font-bold text-slate-600 leading-tight mt-0.5 line-clamp-1">บาลูกา</p>
         </div>
-        <div class="mt-2 flex items-end justify-between">
+        <div class="mt-2 flex items-end justify-between w-full">
             <span id="zone5Count" class="text-2xl font-black text-slate-800 leading-none">0</span>
             <i class="fas fa-map-marker-alt text-purple-100 text-lg"></i>
         </div>
-    </div>
+    </button>
+</div>
+
+<div id="clearFilterArea" class="hidden mb-4 px-2">
+    <button onclick="clearZoneFilter()" class="text-[10px] font-black text-rose-500 hover:text-rose-600 flex items-center bg-rose-50 px-3 py-1 rounded-full transition-all">
+        <i class="fas fa-times-circle mr-1"></i> ล้างการกรองข้อมูลตามโซน
+    </button>
 </div>
     <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden transition-all">
         <div class="overflow-x-auto overflow-y-auto max-h-[650px] custom-scrollbar">
@@ -734,15 +761,14 @@
         let currentUser = "";
         let userRole = ""; // เพิ่มตัวแปรเก็บสิทธิ์
         let waterChartInstance = null;
-        // ประกาศตัวแปร Global ไว้ด้านบนสุดของ <script>
-        
+        let currentZoneFilter = null;
 
         // กำหนดว่าแต่ละสิทธิ์เข้าหน้าไหนได้บ้าง
         const PAGE_ACCESS = {
         'admin': ['water', 'addWater', 'shelter', 'regis', 'relief', 'looker', 'userManagement'],
-        'shelter': ['shelter', 'looker'],
-        'water_staff': ['water', 'addWater', 'looker'], // <-- เพิ่มบรรทัดนี้
-        'relief': ['relief', 'looker']
+        'shelter': ['shelter'],
+        'water_staff': ['water', 'addWater'], // <-- เพิ่มบรรทัดนี้
+        'relief': ['relief']
         };
         // --- Navigation Logic ---
         function toggleSidebar() {
@@ -826,6 +852,7 @@ function showPage(pageId) {
             
             // จัดการซ่อน/แสดงเมนูตามสิทธิ์
             updateMenuByRole();
+            
             
             
             // นำทางไปหน้าแรกที่เหมาะสม
@@ -940,42 +967,7 @@ function showPage(pageId) {
     }
 }
 
-        // 1. เปลี่ยนการทำงานของปุ่ม "บันทึกการแจก" ให้เปิดหน้าต่างเลือกแทน
-function openReliefModal() {
-    // ปิดหน้าต่างเลือกก่อน (ถ้าเปิดอยู่) แล้วแสดงหน้าต่างเลือกใหม่
-    const choiceModal = document.getElementById('reliefChoiceModal');
-    choiceModal.classList.remove('hidden');
-    setTimeout(() => {
-        choiceModal.classList.remove('opacity-0');
-        choiceModal.querySelector('.bg-white').classList.remove('scale-95');
-    }, 10);
-}
-
-function closeReliefChoice() {
-    const choiceModal = document.getElementById('reliefChoiceModal');
-    choiceModal.classList.add('opacity-0');
-    choiceModal.querySelector('.bg-white').classList.add('scale-95');
-    setTimeout(() => { choiceModal.classList.add('hidden'); }, 300);
-}
-
-function startManualRelief() {
-    // 1. ล้างข้อมูลในฟอร์มเก่าออกก่อน
-    const form = document.getElementById('reliefForm');
-    if(form) form.reset();
-
-    // 2. เปิด Modal บันทึกข้อมูล (id ของ modal ฟอร์มเดิมของคุณ)
-    const modal = document.getElementById('reliefModal');
-    if(modal) {
-        modal.classList.remove('hidden');
-        // เพิ่ม Animation เล็กน้อยถ้าต้องการ
-        setTimeout(() => modal.classList.remove('opacity-0'), 10);
-    }
-}
-
-
-
-
-        
+        function openReliefModal() { document.getElementById('reliefModal').classList.remove('hidden'); }
         function closeReliefModal() { document.getElementById('reliefModal').classList.add('hidden'); }
         function toggleRelOtherAddr(val) { document.getElementById('rel_address_other').classList.toggle('hidden', val !== 'other'); }
         function copyAddress(isChecked) {
@@ -1032,7 +1024,22 @@ function renderStockDashboard() {
     // 3. ฟังก์ชันเปิด-ปิด Modal
 function openStockModal() {
     const modal = document.getElementById('stockModal');
+    if (!modal) return;
+
     modal.classList.remove('hidden');
+    
+    // --- จุดสำคัญ: ตรวจสอบข้อมูลก่อนวาดตาราง ---
+    if (store && store.reliefStock) {
+        renderStockTable(); 
+    } else {
+        // ถ้ายังไม่มีข้อมูลใน store ให้แสดงข้อความรอ
+        const tbody = document.getElementById('stockTableBody');
+        if (tbody) tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-slate-400 italic text-xs">ไม่พบข้อมูลในระบบ หรือ กำลังโหลด...</td></tr>`;
+        
+        // ลองโหลดข้อมูลใหม่ (ถ้าคุณมีฟังก์ชัน loadData)
+        if (typeof loadData === "function") loadData(); 
+    }
+
     setTimeout(() => {
         modal.classList.remove('opacity-0');
         modal.querySelector('.bg-white').classList.remove('scale-95');
@@ -1072,12 +1079,64 @@ async function saveStock(e) {
     } catch (err) { Swal.fire('ผิดพลาด', 'บันทึกไม่สำเร็จ', 'error'); }
     btn.innerText = "บันทึกสต๊อก"; btn.disabled = false;
 }
+// 1. ฟังก์ชันวาดตารางประวัติสต็อก
+function renderStockTable() {
+    const tbody = document.getElementById('stockTableBody');
+    if (!tbody) return;
+
+    // ตรวจสอบว่ามีข้อมูลใน store หรือไม่
+    if (!store || !store.reliefStock || store.reliefStock.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-slate-300 italic text-xs">ยังไม่มีประวัติการทำรายการในขณะนี้</td></tr>`;
+        return;
+    }
+
+    // นำข้อมูลล่าสุดขึ้นก่อน
+    const displayData = [...store.reliefStock].reverse();
+
+    tbody.innerHTML = displayData.map(r => {
+        // ป้องกันค่า Error จากวันที่
+        let dateStr = "-";
+        let timeStr = "";
+        try {
+            if (r[0]) {
+                const d = new Date(r[0]);
+                dateStr = d.toLocaleDateString('th-TH', {day:'2-digit', month:'short'});
+                timeStr = d.toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'});
+            }
+        } catch(e) { console.error("Date error", e); }
+        
+        const type = (r[1] || '').toString().toLowerCase() === 'in' ? 
+            '<span class="text-blue-500 font-bold text-[10px]">รับเข้า</span>' : 
+            '<span class="text-rose-500 font-bold text-[10px]">จ่ายออก</span>';
+        
+        const amount = Number(r[2] || 0).toLocaleString();
+        const note = r[3] || '-';
+
+        return `
+            <tr class="hover:bg-slate-50 transition-colors border-b border-slate-50">
+                <td class="p-2">
+                    <div class="font-bold text-slate-700 text-[11px]">${dateStr}</div>
+                    <div class="text-[8px] opacity-40">${timeStr}</div>
+                </td>
+                <td class="p-2 text-center">${type}</td>
+                <td class="p-2 text-right font-black ${r[1] === 'in' ? 'text-blue-600' : 'text-rose-600'} text-[11px]">
+                    ${amount}
+                </td>
+                <td class="p-2 text-right">
+                    <div class="text-[10px] text-slate-400 leading-tight truncate max-w-[70px] ml-auto" title="${note}">
+                        ${note}
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
 
 
     // --- กฎเกณฑ์การแยก Zone ตามชื่อถนน ---
 const zoneRules = {
-    zone1: ['ถนนประชาสามัคคี', 'ถนนระแงะมรรคา', 'ถนนระแงะมรรคา 1', 'ถนนระแงะมรรคา 2', 'ถนนระแงะมรรคา 3', 'ถนนระแงะมรรคา 4', 'ถนนระแงะมรรคา 5', 'ถนนระแงะมรรคา 6', 'ถนนมะรือโบ-บ่อทอง', 'ถนนลานไทร ซอย 1'],
-    zone2: ['ถนนลานไทร ซอย 3', 'ถนนระแงะมรรคา 19'], // <--- เพิ่มข้อมูลแล้ว
+    zone1: ['ถนนประชาสามัคคี', 'ถนนระแงะมรรคา', 'ถนนระแงะมรรรคา 1', 'ถนนระแงะมรรคา 2', 'ถนนระแงะมรรคา 3', 'ถนนระแงะมรรคา 4', 'ถนนระแงะมรรคา 5', 'ถนนระแงะมรรคา 6', 'ถนนมะรือโบ-บ่อทอง', 'ถนนลานไทร ซอย 1'],
+    zone2: ['ถนนลานไทร ซอย 3'],
     zone3: ['ถนนเทศบาล 12', 'ถนนเทศบาล 15', 'ถนนเทศบาล 15 ซอย 1', 'ถนนเทศบาล 15 ซอย 2', 'ถนนเทศบาล 15 ซอย 2/1'],
     zone4: ['ถนนเทศบาล 8 ซอย 2', 'ถนนเทศบาล 8', 'ถนนเทศบาล 11 ซอย 1', 'ถนนเทศบาล 11 ซอย 3', 'ถนนเทศบาล 11 ซอย 5'],
     zone5: ['ถนนเทศบาล 17', 'ถนนเทศบาล 17 ซอย 1ก', 'ถนนเทศบาล 17 ซอย 3', 'ถนนพระยาระแงะ ซอย 3']
@@ -1098,17 +1157,15 @@ function renderReliefTable(data, isSearching = false) {
     // 2. ตัวแปรเก็บจำนวนของแต่ละ Zone
     let counts = { zone1: 0, zone2: 0, zone3: 0, zone4: 0, zone5: 0 };
 
-    // 3. วนลูปเช็คที่อยู่ (แก้ไขลำดับเพื่อป้องกันชื่อถนนทับซ้อนกัน)
+    // 3. วนลูปเช็คที่อยู่ (สมมติว่าที่อยู่เก็บในช่อง r[4])
     summaryData.forEach(r => {
         const address = r[4] ? r[4].toString() : '';
         
-        // ย้าย Zone 2, 3, 4, 5 ขึ้นมาเช็คก่อน
-        if (zoneRules.zone2.some(street => address.includes(street))) counts.zone2++;
+        if (zoneRules.zone1.some(street => address.includes(street))) counts.zone1++;
+        else if (zoneRules.zone2.some(street => address.includes(street))) counts.zone2++;
         else if (zoneRules.zone3.some(street => address.includes(street))) counts.zone3++;
         else if (zoneRules.zone4.some(street => address.includes(street))) counts.zone4++;
         else if (zoneRules.zone5.some(street => address.includes(street))) counts.zone5++;
-        // ให้ Zone 1 ที่มีชื่อถนนสั้นๆ (คำตั้งต้น) อยู่ลำดับสุดท้าย
-        else if (zoneRules.zone1.some(street => address.includes(street))) counts.zone1++;
     });
 
     // 4. แสดงผลตัวเลขขึ้นการ์ด
@@ -1128,7 +1185,7 @@ function renderReliefTable(data, isSearching = false) {
 
     tableBody.innerHTML = displayData.map((r, index) => {
         const timestamp = r[0] ? new Date(r[0]).toLocaleString('th-TH', { day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-';
-        const statusClass = r[2] === 'ปกติ' ? 'bg-green-50 text-green-600 border-green-100' : 'bg-amber-50 text-amber-600 border-amber-100';
+        const statusClass = r[2] === 'เจ้าบ้าน' ? 'bg-green-50 text-green-600 border-green-100' : 'bg-amber-50 text-amber-600 border-amber-100';
         
         return `
             <tr class="hover:bg-slate-50 transition-colors">
@@ -1177,6 +1234,58 @@ function renderReliefTable(data, isSearching = false) {
         console.error(err);
         tbody.innerHTML = `<tr><td colspan="3" class="text-center text-red-400 py-4">ดึงข้อมูลล้มเหลว</td></tr>`;
     }
+}
+
+/**
+ * ฟังก์ชันสำหรับกรองข้อมูลในตารางตาม Zone
+ * @param {string} zoneKey - ชื่อโซน (zone1, zone2, ...)
+ */
+function filterByZone(zoneKey) {
+    if (!store.reliefData) return;
+    
+    // อัปเดตสถานะตัวกรองปัจจุบัน
+    currentZoneFilter = zoneKey;
+    
+    // แสดงปุ่มล้างตัวกรอง
+    document.getElementById('clearFilterArea').classList.remove('hidden');
+
+    // กรองข้อมูลจาก store.reliefData โดยใช้เงื่อนไขชื่อถนนที่เราตั้งไว้
+    const filteredData = store.reliefData.filter(r => {
+        const address = r[4] ? r[4].toString() : '';
+        return zoneRules[zoneKey].some(street => address.includes(street));
+    });
+
+    // แสดง Hilight ที่ปุ่มที่เลือก (Optional)
+    document.querySelectorAll('.zone-filter-btn').forEach(btn => {
+        btn.classList.replace('bg-blue-50', 'bg-white'); // ล้างสีปุ่มอื่น (ถ้ามี)
+        btn.style.opacity = "0.5";
+    });
+    document.getElementById(`btn-${zoneKey}`).style.opacity = "1";
+    document.getElementById(`btn-${zoneKey}`).classList.add('ring-2');
+
+    // สั่งวาดตารางใหม่ด้วยข้อมูลที่กรองแล้ว
+    // ส่ง isSearching = true เพื่อให้เลขลำดับในตารางแสดงเป็นจุดหรือตามข้อมูลที่กรอง
+    renderReliefTable(filteredData, true);
+    
+    // แจ้งเตือนเล็กน้อย (Toast)
+    console.log(`Filtering by ${zoneKey}: พบ ${filteredData.length} รายการ`);
+}
+
+/**
+ * ฟังก์ชันล้างตัวกรอง กลับไปแสดงข้อมูลทั้งหมด
+ */
+function clearZoneFilter() {
+    currentZoneFilter = null;
+    document.getElementById('clearFilterArea').classList.add('hidden');
+    
+    // รีเซ็ตสไตล์ปุ่ม
+    document.querySelectorAll('.zone-filter-btn').forEach(btn => {
+        btn.style.opacity = "1";
+        btn.classList.remove('ring-2');
+    });
+
+    // แสดงข้อมูลทั้งหมดใหม่
+    renderReliefTable(store.reliefData);
 }
 
 async function saveUser(e) {
