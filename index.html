@@ -79,6 +79,113 @@
         background: #cbd5e1;
         border-radius: 10px;
     }
+    /* --- CSS สำหรับการพิมพ์รายงาน (Print Styles) --- */
+/* --- CSS สำหรับการพิมพ์รายงาน (Print Styles) --- */
+@media print {
+    /* 1. ซ่อนองค์ประกอบที่ไม่เกี่ยวข้องทั้งหมด (Sidebar, Navbar, ปุ่มต่างๆ) */
+    body > *:not(#printArea) {
+        display: none !important;
+    }
+
+    /* 2. แสดงพื้นที่พิมพ์และขยายให้เต็มหน้ากระดาษ */
+    #printArea {
+        display: block !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        background-color: white;
+    }
+
+    /* 3. ตั้งค่าหน้ากระดาษ A4 แนวนอน (Landscape) */
+    @page {
+        size: A4 landscape;
+        margin: 1cm;
+    }
+
+    /* 4. จัดการเลย์เอาต์หน้าแรก (หน้ากราฟ) */
+    .print-page {
+        width: 100%;
+        height: 100%;
+    }
+
+    .report-header {
+        text-align: center;
+        margin-bottom: 30px;
+        border-bottom: 2px solid #334155;
+        padding-bottom: 10px;
+    }
+
+    .chart-container-print {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    .chart-container-print img {
+        width: 45%; /* แสดง 2 กราฟต่อแถว */
+        height: auto;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        object-fit: contain;
+    }
+
+    /* 5. บังคับขึ้นหน้าใหม่สำหรับตารางรายชื่อ */
+    .page-break {
+        display: block;
+        page-break-before: always !important;
+        margin-top: 50px;
+    }
+
+    /* 6. สไตล์ตารางรายงาน (เน้นความชัดเจนและประหยัดหมึก) */
+    .print-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background-color: white;
+    }
+
+    .print-table th {
+        background-color: #f1f5f9 !important;
+        color: #0f172a !important;
+        border: 1px solid #cbd5e1;
+        padding: 10px 5px;
+        font-size: 14px;
+        -webkit-print-color-adjust: exact; /* บังคับพิมพ์สีพื้นหลัง */
+    }
+
+    .print-table td {
+        border: 1px solid #cbd5e1;
+        padding: 8px 5px;
+        font-size: 12px;
+        color: #334155;
+        vertical-align: middle;
+    }
+
+    /* 7. ส่วนท้ายกระดาษ (ถ้ามี) */
+    .print-footer {
+        margin-top: 30px;
+        text-align: right;
+        font-size: 12px;
+        color: #64748b;
+    }
+
+    /* ป้องกันตารางขาดกลางแถว */
+    tr {
+        page-break-inside: avoid;
+    }
+}
+
+/* ซ่อนพื้นที่พิมพ์ในหน้าเว็บปกติ */
+#printArea.hidden {
+    display: none;
+}
+
+/* ซ่อนในโหมดหน้าจอปกติ */
+#printArea.hidden { display: none; }
 </style>
     </style>
 </head>
@@ -116,8 +223,25 @@
     <button id="adminMenuBtn" onclick="showPage('userManagement')" class="hidden w-full items-center justify-center p-3 mb-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white transition-all shadow-md active:scale-95" data-page="userManagement">
         <i class="fas fa-users-cog"></i>
         <span class="nav-text ml-2 text-xs font-bold uppercase tracking-wider">จัดการผู้ใช้งาน</span>
+        
     </button>
-
+    <div class="mt-auto border-t border-slate-100 p-4">
+    <div class="flex items-center justify-between bg-slate-50 p-3 rounded-2xl">
+        <div class="flex items-center space-x-3 overflow-hidden">
+            <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="overflow-hidden">
+                <p id="displayUserName" class="text-[11px] font-black text-slate-700 truncate">Guest</p>
+                <p id="displayUserRole" class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Staff</p>
+            </div>
+        </div>
+        
+        <button onclick="handleLogout()" class="text-slate-300 hover:text-rose-500 transition-colors p-1" title="ออกจากระบบ">
+            <i class="fas fa-sign-out-alt"></i>
+        </button>
+    </div>
+</div>
     <button onclick="toggleSidebar()" class="w-full flex items-center justify-center p-2 rounded-xl hover:bg-blue-50 text-slate-400 transition-all">
         <i id="sideIcon" class="fas fa-chevron-left"></i>
         <span class="nav-text ml-2 text-xs font-bold uppercase tracking-wider">ย่อเมนู</span>
@@ -260,6 +384,9 @@
         <button onclick="filterShelter('ศูนย์เทศบาลตำบลตันหยงมัส/บาลูกา')" class="shelter-filter-btn bg-white whitespace-nowrap px-4 py-2 rounded-2xl text-[11px] font-bold shadow-sm transition-all" data-center="ศูนย์เทศบาลตำบลตันหยงมัส/บาลูกา">ศูนย์เทศบาลตำบลตันหยงมัส</button>
         <button onclick="filterShelter('ศูนย์มัสยิดตันหยงมัส')" class="shelter-filter-btn bg-white whitespace-nowrap px-4 py-2 rounded-2xl text-[11px] font-bold shadow-sm transition-all" data-center="ศูนย์มัสยิดตันหยงมัส">ศูนย์มัสยิดตันหยงมัส</button>
         <button onclick="filterShelter('ศูนย์โรงเรียนบ้านเขาพระ')" class="shelter-filter-btn bg-white whitespace-nowrap px-4 py-2 rounded-2xl text-[11px] font-bold shadow-sm transition-all" data-center="ศูนย์โรงเรียนบ้านเขาพระ">ศูนย์โรงเรียนบ้านเขาพระ</button>
+        <button onclick="printShelterReport()" class="bg-slate-800 hover:bg-black text-white text-xs font-bold px-4 py-2 rounded-xl transition-all flex items-center shadow-lg">
+        <i class="fas fa-print mr-2"></i> พิมพ์รายงาน / PDF
+    </button>
     </div>
 
     <div class="grid grid-cols-2 md:grid-cols-12 gap-3 mb-6">
@@ -744,6 +871,76 @@
             </div>
         </main>
     </div>
+    <div id="printArea" class="hidden">
+    <div class="print-page">
+    <div class="report-header">
+        <h1 class="text-2xl font-black">รายงานสรุปสถิติผู้พักพิง ศูนย์พักพิงชั่วคราวเทศบาลตำบลตันหยงมัส</h1>
+        <p class="text-sm mt-1">ข้อมูล ณ วันที่ <span id="printDate"></span></p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px;">
+        <div style="border: 2px solid #cbd5e1; border-radius: 12px; padding: 12px; text-align: center; background: #f8fafc;">
+            <p style="font-size: 10px; font-weight: bold; color: #64748b;">ยอดผู้พักพิงรวม</p>
+            <h2 id="printTotalEvacuees" style="font-size: 28px; font-weight: 900; margin: 2px 0;">0</h2>
+            <p style="font-size: 9px; color: #94a3b8;">ราย</p>
+        </div>
+
+        <div style="border: 2px solid #cbd5e1; border-radius: 12px; padding: 12px; text-align: center; background: #f8fafc;">
+            <p style="font-size: 10px; font-weight: bold; color: #64748b;">จำนวนครัวเรือน</p>
+            <h2 id="printTotalHouseholds" style="font-size: 28px; font-weight: 900; margin: 2px 0;">0</h2>
+            <p style="font-size: 9px; color: #94a3b8;">ครัวเรือน</p>
+        </div>
+        <div style="border: 2px solid #3b82f6; border-radius: 12px; padding: 12px; text-align: center; background: #eff6ff;">
+            <p style="font-size: 10px; font-weight: bold; color: #1d4ed8;">แยกเพศ (ชาย/หญิง)</p>
+            <div style="display: flex; justify-content: space-around; align-items: baseline; margin-top: 5px;">
+                <div><span id="printMaleTotal" style="font-size: 22px; font-weight: 900;">0</span><small> ชาย</small></div>
+                <div style="border-left: 1px solid #bfdbfe; height: 20px;"></div>
+                <div><span id="printFemaleTotal" style="font-size: 22px; font-weight: 900;">0</span><small> หญิง</small></div>
+            </div>
+        </div>
+        <div style="border: 2px solid #e11d48; border-radius: 12px; padding: 12px; text-align: center; background: #fff1f2;">
+            <p style="font-size: 10px; font-weight: bold; color: #be123c;">กลุ่มเปราะบาง/ป่วย</p>
+            <h2 id="printTotalHealth" style="font-size: 28px; font-weight: 900; margin: 2px 0; color: #e11d48;">0</h2>
+            <p style="font-size: 9px; color: #fb7185;">ราย</p>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+        <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px;">
+            <h3 style="font-size: 12px; font-weight: 800; border-bottom: 2px solid #3b82f6; padding-bottom: 5px; margin-bottom: 8px;">แยกตามศูนย์</h3>
+            <div id="printShelterList" style="font-size: 10px;" class="space-y-1"></div>
+        </div>
+        <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px;">
+            <h3 style="font-size: 12px; font-weight: 800; border-bottom: 2px solid #f59e0b; padding-bottom: 5px; margin-bottom: 8px;">แยกตามช่วงอายุ</h3>
+            <div id="printAgeList" style="font-size: 10px;" class="space-y-1"></div>
+        </div>
+        <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px;">
+            <h3 style="font-size: 12px; font-weight: 800; border-bottom: 2px solid #e11d48; padding-bottom: 5px; margin-bottom: 8px;">สถานะสุขภาพรายโรค</h3>
+            <div id="printHealthList" style="font-size: 10px;" class="space-y-1"></div>
+        </div>
+    </div>
+</div>
+
+    <div class="print-page page-break">
+        <div class="report-header" style="text-align: left; border-bottom: 1px solid #eee;">
+            <h2 class="text-lg font-bold">บัญชีรายชื่อผู้ลงทะเบียน</h2>
+        </div>
+        <table class="print-table">
+            <thead>
+                <tr>
+                    <th style="width: 40px;">ลำดับ</th>
+                    <th>ศูนย์พักพิง</th>
+                    <th>ชื่อ-นามสกุล</th>
+                    <th>เพศ</th>
+                    <th>อายุ</th>
+                    <th>ที่อยู่</th>
+                    <th>เบอร์โทรศัพท์</th>
+                </tr>
+            </thead>
+            <tbody id="printTableBody"></tbody>
+        </table>
+    </div>
+</div>
 
     <div id="imageLightbox" onclick="closeLightbox()" class="hidden fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity opacity-0 duration-300">
     <button onclick="closeLightbox()" class="absolute top-4 right-4 text-white/70 hover:text-white transition-colors z-50">
@@ -763,6 +960,107 @@
         let waterChartInstance = null;
         let currentZoneFilter = null;
 
+        // ฟังก์ชันจัดการ UI หลัง Login
+function setupUserInterface(user) {
+    if (!user) return;
+    
+    // อัปเดตชื่อและบทบาทใน Sidebar
+    const nameDisplay = document.getElementById('displayUserName');
+    const roleDisplay = document.getElementById('displayUserRole');
+    
+    if (nameDisplay) nameDisplay.innerText = user.name;
+    if (roleDisplay) roleDisplay.innerText = user.role.toUpperCase();
+}
+
+function updateMenuByRole() {
+    // ดึงสิทธิ์จากตัวแปร Global (ต้องมั่นใจว่าถูกอัปเดตแล้วตอน Login หรือ Load Session)
+    const allowed = PAGE_ACCESS[userRole] || ['shelter'];
+    
+    // จัดการเมนูหลัก
+    document.querySelectorAll('.nav-btn, .mobile-nav-btn').forEach(btn => {
+        const page = btn.getAttribute('data-page');
+        if (page) {
+            btn.style.display = allowed.includes(page) ? 'flex' : 'none';
+        }
+    });
+
+    // ปุ่มจัดการระบบ (Admin เท่านั้น)
+    const adminBtn = document.getElementById('adminMenuBtn');
+    if (adminBtn) {
+        if (userRole === 'admin') {
+            adminBtn.style.display = 'flex';
+            adminBtn.classList.remove('hidden');
+        } else {
+            adminBtn.style.display = 'none';
+            adminBtn.classList.add('hidden');
+        }
+    }
+}
+
+// ฟังก์ชันออกจากระบบ
+function handleLogout() {
+    Swal.fire({
+        title: 'ยืนยันการออกจากระบบ?',
+        text: "คุณต้องเข้าสู่ระบบใหม่เพื่อใช้งานอีกครั้ง",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#e11d48',
+        confirmButtonText: 'ออกจากระบบ',
+        cancelButtonText: 'ยกเลิก'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            localStorage.removeItem('user_session');
+            location.reload(); 
+        }
+    });
+}
+
+// เช็คสถานะเมื่อโหลดหน้าเว็บ
+window.addEventListener('load', async () => {
+    const savedSession = localStorage.getItem('user_session');
+    
+    if (savedSession) {
+        try {
+            const userData = JSON.parse(savedSession);
+            
+            // 1. คืนค่าตัวแปร Global
+            currentUser = userData.username;
+            userRole = userData.role;
+
+            // 2. ข้ามหน้า Login ไปหน้าแอป
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('mainApp').classList.remove('hidden');
+
+            // 3. อัปเดต UI และเมนูตามสิทธิ์
+            setupUserInterface(userData);
+            updateMenuByRole();
+            
+            // 4. โหลดข้อมูลเข้าสู่ระบบ
+            await loadData();
+
+            // --- จุดที่แก้ไข: กำหนดหน้าแรกตามสิทธิ์ (Role-Based Landing Page) ---
+            let targetPage = 'water'; // ค่าเริ่มต้นสำหรับทั่วไป
+            
+            if (userRole === 'admin') {
+                targetPage = 'water'; // หรือหน้า Dashboard ของ admin
+            } else if (userRole === 'shelter') {
+                targetPage = 'shelter';
+            } else if (userRole === 'water_staff') {
+                targetPage = 'addWater';
+            } else if (userRole === 'relief') {
+                targetPage = 'relief';
+            }
+
+            // สั่งแสดงหน้าตามสิทธิ์ที่คำนวณได้
+            showPage(targetPage);
+
+        } catch (e) {
+            console.error("Session Error:", e);
+            localStorage.removeItem('user_session');
+            location.reload();
+        }
+    }
+});
         // กำหนดว่าแต่ละสิทธิ์เข้าหน้าไหนได้บ้าง
         const PAGE_ACCESS = {
         'admin': ['water', 'addWater', 'shelter', 'regis', 'relief', 'looker', 'userManagement'],
@@ -844,50 +1142,44 @@ function showPage(pageId) {
         const data = await res.json();
         
         if(data.success) {
-            currentUser = user;
-            userRole = data.role; // รับสิทธิ์มาจากเซิร์ฟเวอร์
+            // 1. เตรียมข้อมูล User
+            const userData = {
+                username: user,
+                name: data.name || user, // ใช้ชื่อจริงจาก Server ถ้าไม่มีใช้ username
+                role: data.role
+            };
 
+            // 2. บันทึก Session ลง Browser
+            localStorage.setItem('user_session', JSON.stringify(userData));
+
+            // 3. อัปเดตตัวแปร Global
+            currentUser = userData.username;
+            userRole = userData.role;
+
+            // 4. จัดการหน้าจอและเมนู
             document.getElementById('loginPage').style.display = 'none';
             document.getElementById('mainApp').classList.remove('hidden');
             
-            // จัดการซ่อน/แสดงเมนูตามสิทธิ์
-            updateMenuByRole();
-            
-            
-            
-            // นำทางไปหน้าแรกที่เหมาะสม
-            let firstPage = 'water'; // ค่าเริ่มต้น
-                if (userRole === 'shelter') firstPage = 'shelter';
-                if (userRole === 'water_staff') firstPage = 'addWater'; // กำหนดให้เข้าหน้ารายงานน้ำทันที
-                if (userRole === 'relief') firstPage = 'relief';
+            setupUserInterface(userData); // อัปเดตชื่อใน Sidebar
+            updateMenuByRole(); // จัดการสิทธิ์เมนู
+
+            // 5. นำทางไปหน้าแรกตามสิทธิ์
+            let firstPage = 'water'; 
+            if (userRole === 'shelter') firstPage = 'shelter';
+            if (userRole === 'water_staff') firstPage = 'addWater';
+            if (userRole === 'relief') firstPage = 'relief';
 
             showPage(firstPage);
-
             await loadData();
+
         } else {
-            Swal.fire('ผิดพลาด', data.error, 'error');
+            Swal.fire('ผิดพลาด', data.error || 'ชื่อผู้ใช้ไม่ถูกต้อง', 'error');
             btn.innerText = 'เข้าใช้งานระบบ'; btn.disabled = false;
         }
     } catch(e) { 
-        Swal.fire('การเชื่อมต่อขัดข้อง', 'โปรดตรวจสอบ URL ของ Web App ล่าสุด', 'error'); 
-        btn.disabled = false; 
-    }
-}
-        function updateMenuByRole() {
-    const allowed = PAGE_ACCESS[userRole] || ['shelter'];
-    
-    // เมนูหลัก
-    document.querySelectorAll('.nav-btn, .mobile-nav-btn').forEach(btn => {
-        const page = btn.getAttribute('data-page');
-        btn.style.display = allowed.includes(page) ? 'flex' : 'none';
-    });
-
-    // ปุ่มจัดการระบบ (แสดงเฉพาะ admin)
-    const adminBtn = document.getElementById('adminMenuBtn');
-    if (adminBtn) {
-        adminBtn.style.display = (userRole === 'admin') ? 'flex' : 'none';
-        // เมื่อ Sidebar หดตัว ให้คงรูปแบบ Flex ไว้แต่ไอคอนจะจัดการตัวเองตาม CSS เดิม
-        if(userRole === 'admin') adminBtn.classList.remove('hidden'); 
+        console.error(e);
+        Swal.fire('การเชื่อมต่อขัดข้อง', 'โปรดตรวจสอบการเชื่อมต่ออินเทอร์เน็ต', 'error'); 
+        btn.innerText = 'เข้าใช้งานระบบ'; btn.disabled = false; 
     }
 }
 
@@ -1913,6 +2205,115 @@ function closeLightbox() {
         modal.classList.add('hidden');
         img.src = ''; // เคลียร์รูปออก
     }, 300); // รอให้ Animation จบก่อนซ่อน
+}
+
+// เมื่อหน้าเว็บโหลดเสร็จ
+window.addEventListener('load', () => {
+    const savedSession = localStorage.getItem('user_session');
+
+    if (savedSession) {
+        try {
+            const userData = JSON.parse(savedSession);
+            // ถ้ามีข้อมูลผู้ใช้ ให้เข้าหน้าแอปทันทีโดยไม่ต้อง Login ใหม่
+            setupUserInterface(userData);
+            console.log("Session Restored:", userData.name);
+        } catch (e) {
+            console.error("Session Error", e);
+            localStorage.removeItem('user_session');
+        }
+    }
+});
+
+// ฟังก์ชันสำหรับพิมพ์รายงานศูนย์พักพิง
+function printShelterReport() {
+    const data = store.evacuees || [];
+    if (data.length === 0) {
+        Swal.fire('ไม่พบข้อมูล', 'ไม่มีข้อมูลผู้พักพิงสำหรับจัดทำรายงาน', 'warning');
+        return;
+    }
+
+    document.getElementById('printArea').classList.remove('hidden');
+    document.getElementById('printDate').innerText = new Date().toLocaleString('th-TH');
+
+    // --- 1. คำนวณยอดรวมและเพศ ---
+    const totalPeople = data.length;
+    const males = data.filter(r => r[6] === 'ชาย').length;
+    const females = data.filter(r => r[6] === 'หญิง').length;
+    const households = new Set(data.map(r => r[2])).size;
+    const healthCases = data.filter(r => r[8] && r[8] !== 'ปกติ').length;
+
+    document.getElementById('printTotalEvacuees').innerText = totalPeople;
+    document.getElementById('printMaleTotal').innerText = males;
+    document.getElementById('printFemaleTotal').innerText = females;
+    document.getElementById('printTotalHouseholds').innerText = households;
+    document.getElementById('printTotalHealth').innerText = healthCases;
+
+    // --- 2. สรุปแยกตามศูนย์พักพิง ---
+    const shelterCounts = {};
+    data.forEach(r => {
+        const name = r[1] || 'ไม่ระบุศูนย์';
+        shelterCounts[name] = (shelterCounts[name] || 0) + 1;
+    });
+
+    const shelterList = document.getElementById('printShelterList');
+    shelterList.innerHTML = Object.entries(shelterCounts).map(([name, count]) => `
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #eee; padding-bottom: 5px;">
+            <span style="font-size: 12px; font-weight: 600;">${name}</span>
+            <span style="font-size: 14px; font-weight: 900; color: #2563eb;">${count} <small style="font-weight: normal; color: #94a3b8;">ราย</small></span>
+        </div>
+    `).join('');
+
+    // --- 3. สรุปช่วงอายุ (Age Groups) ---
+    const ageGroups = { 'เด็ก (0-12)': 0, 'วัยรุ่น (13-20)': 0, 'ผู้ใหญ่ (21-60)': 0, 'ผู้สูงอายุ (60+)': 0 };
+    data.forEach(r => {
+        const age = parseInt(r[5]) || 0;
+        if (age <= 12) ageGroups['เด็ก (0-12)']++;
+        else if (age <= 20) ageGroups['วัยรุ่น (13-20)']++;
+        else if (age < 60) ageGroups['ผู้ใหญ่ (21-60)']++;
+        else ageGroups['ผู้สูงอายุ (60+)']++;
+    });
+
+    const ageList = document.getElementById('printAgeList');
+    ageList.innerHTML = Object.entries(ageGroups).map(([label, count]) => `
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #eee; padding-bottom: 5px;">
+            <span style="font-size: 12px;">${label}</span>
+            <span style="font-size: 14px; font-weight: 900;">${count} <small style="font-weight: normal; color: #94a3b8;">ราย</small></span>
+        </div>
+    `).join('');
+    
+    // --- 4. สรุปรายละเอียดสุขภาพ (List) ---
+    const healthMap = {};
+    data.forEach(r => {
+        const h = String(r[8] || 'ปกติ').trim();
+        healthMap[h] = (healthMap[h] || 0) + 1;
+    });
+    
+    document.getElementById('printHealthList').innerHTML = Object.entries(healthMap)
+        .sort((a,b) => b[1] - a[1]) // เอาจำนวนมากขึนก่อน
+        .map(([name, count]) => `
+            <div style="display:flex; justify-content:space-between; border-bottom:1px dashed #eee;">
+                <span>${name}</span><b>${count} ราย</b>
+            </div>
+        `).join('');
+    // --- 5. เติมตารางรายชื่อหน้า 2 ---
+    const printTbody = document.getElementById('printTableBody');
+    printTbody.innerHTML = data.map((r, i) => `
+        <tr>
+            <td style="text-align:center">${i + 1}</td>
+            <td>${r[1] || '-'}</td>
+            <td style="font-weight:bold">${r[4] || '-'}</td>
+            <td style="text-align:center">${r[6] || '-'}</td>
+            <td style="text-align:center">${r[5] || '-'}</td>
+            <td>${r[2] || '-'}</td>
+            <td>${r[7] || '-'}</td>
+        </tr>
+    `).join('');
+
+    // 6. สั่งพิมพ์
+    setTimeout(() => {
+        window.print();
+        document.getElementById('printArea').classList.add('hidden');
+    }, 500);
 }
     </script>
 </body>
